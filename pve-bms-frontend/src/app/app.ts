@@ -1,3 +1,4 @@
+
 import { Component } from '@angular/core';
 import { CategoryList } from './components/category-list/category-list';
 
@@ -6,7 +7,7 @@ import { CategoryList } from './components/category-list/category-list';
   standalone: true,
   imports: [CategoryList],
   templateUrl: './app.html',
-  styleUrl: './app.css',
+  styleUrl: './app.css'
 })
 export class App {
 }

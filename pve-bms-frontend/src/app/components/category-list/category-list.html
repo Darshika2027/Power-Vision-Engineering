@@ -1,0 +1,136 @@
+
+<div class="page-container">
+
+  <div class="page-header">
+    <div>
+      <h1>Product Category Management</h1>
+      <p>Manage and organize your product categories</p>
+    </div>
+
+    <button class="add-btn" (click)="openAddForm()">
+      + Add Category
+    </button>
+  </div>
+
+  <div class="summary-cards">
+    <div class="summary-card">
+      <span>Total Categories</span>
+      <h2>{{ categories.length }}</h2>
+    </div>
+
+    <div class="summary-card">
+      <span>Active Categories</span>
+      <h2>{{ activeCount }}</h2>
+    </div>
+
+    <div class="summary-card">
+      <span>Inactive Categories</span>
+      <h2>{{ inactiveCount }}</h2>
+    </div>
+  </div>
+
+  <div class="content-card">
+
+    <div class="toolbar">
+      <h2>Category List</h2>
+
+      <input
+        type="text"
+        placeholder="Search categories..."
+        [(ngModel)]="searchText"
+      />
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Category Name</th>
+          <th>Description</th>
+          <th>Parent Category</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let category of filteredCategories">
+          <td>{{ category.categoryName }}</td>
+          <td>{{ category.description }}</td>
+          <td>{{ category.parentCategory || '—' }}</td>
+          <td>
+            <span [class.active]="category.status"
+                  [class.inactive]="!category.status">
+              {{ category.status ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+          <td>
+            <button class="edit-btn"
+                    (click)="editCategory(category)">Edit</button>
+
+            <button class="status-btn"
+                    (click)="toggleStatus(category)">
+              {{ category.status ? 'Deactivate' : 'Activate' }}
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p *ngIf="filteredCategories.length === 0" class="empty-message">
+      No categories found.
+    </p>
+
+  </div>
+
+  <div class="modal-backdrop" *ngIf="showForm">
+    <div class="category-modal">
+
+      <h2>{{ editingId ? 'Edit Category' : 'Add New Category' }}</h2>
+
+      <form (ngSubmit)="saveCategory()">
+
+        <label>Category Name *</label>
+        <input
+          type="text"
+          name="categoryName"
+          [(ngModel)]="form.categoryName"
+          required
+          placeholder="Enter category name"
+        />
+
+        <label>Description</label>
+        <textarea
+          name="description"
+          [(ngModel)]="form.description"
+          placeholder="Enter description">
+        </textarea>
+
+        <label>Parent Category</label>
+        <select
+          name="parentCategory"
+          [(ngModel)]="form.parentCategory">
+
+          <option value="">None</option>
+
+          <option
+            *ngFor="let category of categories"
+            [value]="category.categoryName"
+            [disabled]="category.categoryName === form.categoryName">
+            {{ category.categoryName }}
+          </option>
+        </select>
+
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn"
+                  (click)="closeForm()">Cancel</button>
+
+          <button type="submit" class="add-btn">
+            Save Category
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>

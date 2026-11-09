@@ -1,0 +1,473 @@
+
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">PVE</div>
+      <div>
+        <h2>PVE-BMS</h2>
+        <span>Business Management</span>
+      </div>
+    </div>
+
+    <div class="nav-label">MAIN MENU</div>
+
+    <nav class="navigation">
+      <a class="nav-item">
+        <span>⌂</span> Dashboard
+      </a>
+
+      <a class="nav-item">
+        <span>▣</span> Products
+      </a>
+
+      <a class="nav-item active">
+        <span>▦</span> Categories
+        <span class="nav-count">{{ totalCategories }}</span>
+      </a>
+
+      <a class="nav-item">
+        <span>▤</span> Subcategories
+      </a>
+
+      <a class="nav-item">
+        <span>▣</span> Inventory
+      </a>
+
+      <a class="nav-item">
+        <span>🛒</span> Sales (POS)
+      </a>
+
+      <a class="nav-item">
+        <span>♧</span> Suppliers
+      </a>
+
+      <a class="nav-item">
+        <span>⚒</span> Repairs
+      </a>
+
+      <a class="nav-item">
+        <span>▥</span> Reports
+      </a>
+
+      <a class="nav-item">
+        <span>⚙</span> Settings
+      </a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="sidebar-message">
+        <span class="message-icon">✦</span>
+        <h3>Build Better.</h3>
+        <p>Manage Smarter.</p>
+      </div>
+      <span class="version">PVE-BMS · Frontend Demo</span>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div>
+        <span class="breadcrumb">Products /</span>
+        <strong>Categories</strong>
+      </div>
+
+      <div class="topbar-right">
+        <div class="system-status">
+          <span class="online-dot"></span>
+          System Online
+        </div>
+        <button class="notification-btn" type="button">♧</button>
+        <div class="profile">
+          <div class="avatar">A</div>
+          <div>
+            <strong>Administrator</strong>
+            <span>System Admin</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-content">
+        <span class="hero-tag">PRODUCT MANAGEMENT</span>
+        <h1>Product Category <span>Management</span></h1>
+        <p>Organize your products. Simplify your inventory.</p>
+        <div class="hero-line"></div>
+      </div>
+
+      <div class="hero-decoration">
+        <div class="hero-orbit orbit-one"></div>
+        <div class="hero-orbit orbit-two"></div>
+        <div class="hero-box">▦</div>
+        <div class="hero-small">✦</div>
+      </div>
+    </section>
+
+    <!-- STATISTICS -->
+    <section class="stats-grid">
+
+      <div class="stat-card stat-blue">
+        <div class="stat-icon">▦</div>
+        <div class="stat-info">
+          <span>Total Categories</span>
+          <h2>{{ totalCategories }}</h2>
+          <small>All registered categories</small>
+        </div>
+      </div>
+
+      <div class="stat-card stat-green">
+        <div class="stat-icon">✓</div>
+        <div class="stat-info">
+          <span>Active Categories</span>
+          <h2>{{ activeCount }}</h2>
+          <small>Currently active</small>
+        </div>
+      </div>
+
+      <div class="stat-card stat-orange">
+        <div class="stat-icon">◷</div>
+        <div class="stat-info">
+          <span>Inactive Categories</span>
+          <h2>{{ inactiveCount }}</h2>
+          <small>Currently inactive</small>
+        </div>
+      </div>
+
+      <div class="stat-card stat-purple">
+        <div class="stat-icon">⌘</div>
+        <div class="stat-info">
+          <span>Subcategories</span>
+          <h2>{{ subcategoryCount }}</h2>
+          <small>Child categories</small>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- CATEGORY WORKSPACE -->
+    <section class="workspace">
+
+      <div class="workspace-header">
+        <div>
+          <span class="section-kicker">CATALOGUE ORGANIZATION</span>
+          <h2>Manage Categories</h2>
+          <p>View, organize and maintain your product categories.</p>
+        </div>
+
+        <button class="primary-button" (click)="openAddForm()">
+          <span>＋</span> Add New Category
+        </button>
+      </div>
+
+      <!-- TOOLBAR -->
+      <div class="toolbar">
+        <div class="search-wrapper">
+          <span>⌕</span>
+          <input
+            type="text"
+            placeholder="Search categories..."
+            [(ngModel)]="searchText"
+            (ngModelChange)="onSearchChange()">
+        </div>
+
+        <select
+          class="filter-select"
+          [(ngModel)]="statusFilter"
+          (ngModelChange)="onFilterChange()">
+          <option value="All">All Status</option>
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+
+        <div class="view-switch">
+          <button
+            type="button"
+            [class.selected]="viewMode === 'grid'"
+            (click)="viewMode = 'grid'">
+            ▦ Grid
+          </button>
+
+          <button
+            type="button"
+            [class.selected]="viewMode === 'list'"
+            (click)="viewMode = 'list'">
+            ☷ List
+          </button>
+        </div>
+      </div>
+
+      <!-- GRID VIEW -->
+      <div class="category-grid" *ngIf="viewMode === 'grid'">
+
+        <article
+          class="category-card"
+          *ngFor="let category of paginatedCategories"
+          [class.inactive-card]="category.status === 'Inactive'">
+
+          <div class="card-top">
+            <div class="category-icon" [attr.data-color]="category.color">
+              {{ category.icon }}
+            </div>
+
+            <span class="status-badge"
+              [class.status-active]="category.status === 'Active'"
+              [class.status-inactive]="category.status === 'Inactive'">
+              <span class="status-dot"></span>
+              {{ category.status }}
+            </span>
+          </div>
+
+          <div class="category-content">
+            <h3>{{ category.name }}</h3>
+            <p>{{ category.description }}</p>
+          </div>
+
+          <div class="category-meta">
+            <span>▣ {{ category.productCount }} Products</span>
+            <span *ngIf="category.parentId">Subcategory</span>
+            <span *ngIf="!category.parentId">Main Category</span>
+          </div>
+
+          <div class="card-footer">
+            <button class="text-action" (click)="viewDetails(category)">
+              View Details →
+            </button>
+
+            <div class="card-actions">
+              <button
+                class="icon-action edit-action"
+                title="Edit category"
+                (click)="editCategory(category)">✎</button>
+
+              <button
+                class="icon-action status-action"
+                title="Change status"
+                (click)="toggleStatus(category)">⟳</button>
+
+              <button
+                class="icon-action delete-action"
+                title="Delete category"
+                (click)="deleteCategory(category)">×</button>
+            </div>
+          </div>
+
+        </article>
+
+        <div class="empty-state" *ngIf="paginatedCategories.length === 0">
+          <div>⌕</div>
+          <h3>No categories found</h3>
+          <p>Try another search or add a new category.</p>
+          <button class="primary-button" (click)="openAddForm()">
+            Add Category
+          </button>
+        </div>
+
+      </div>
+
+      <!-- LIST VIEW -->
+      <div class="list-container" *ngIf="viewMode === 'list'">
+        <table>
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Type</th>
+              <th>Products</th>
+              <th>Status</th>
+              <th>Created Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let category of paginatedCategories">
+              <td>
+                <div class="table-category">
+                  <span class="table-icon">{{ category.icon }}</span>
+                  <div>
+                    <strong>{{ category.name }}</strong>
+                    <small>{{ category.description }}</small>
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                {{ category.parentId ? 'Subcategory' : 'Main Category' }}
+              </td>
+
+              <td>{{ category.productCount }}</td>
+
+              <td>
+                <span class="status-badge"
+                  [class.status-active]="category.status === 'Active'"
+                  [class.status-inactive]="category.status === 'Inactive'">
+                  {{ category.status }}
+                </span>
+              </td>
+
+              <td>{{ category.createdAt }}</td>
+
+              <td>
+                <div class="card-actions">
+                  <button class="icon-action edit-action"
+                    (click)="editCategory(category)">✎</button>
+                  <button class="icon-action delete-action"
+                    (click)="deleteCategory(category)">×</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGINATION -->
+      <div class="pagination">
+        <span>
+          Showing {{ filteredCategories.length === 0 ? 0 : (currentPage - 1) * pageSize + 1 }}
+          -
+          {{ currentPage * pageSize > filteredCategories.length ? filteredCategories.length : currentPage * pageSize }}
+          of {{ filteredCategories.length }} categories
+        </span>
+
+        <div class="pagination-actions">
+          <button (click)="changePage(currentPage - 1)"
+            [disabled]="currentPage === 1">‹</button>
+
+          <button class="current-page">{{ currentPage }}</button>
+
+          <button (click)="changePage(currentPage + 1)"
+            [disabled]="currentPage === totalPages">›</button>
+        </div>
+      </div>
+
+    </section>
+
+    <footer class="page-footer">
+      <span>© 2026 Power Vision Engineering</span>
+      <span>PVE-BMS · Business Management System</span>
+    </footer>
+
+  </main>
+</div>
+
+<!-- ADD / EDIT MODAL -->
+<div class="modal-backdrop" *ngIf="showForm" (click)="closeForm()">
+
+  <section class="form-modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <div>
+        <span class="section-kicker">CATEGORY CONFIGURATION</span>
+        <h2>{{ editingId !== null ? 'Edit Category' : 'Create New Category' }}</h2>
+        <p>Enter the category information below.</p>
+      </div>
+      <button class="close-button" type="button" (click)="closeForm()">×</button>
+    </div>
+
+    <form (ngSubmit)="saveCategory()">
+
+      <label>Category Name <span>*</span></label>
+      <input
+        type="text"
+        name="name"
+        [(ngModel)]="form.name"
+        placeholder="Enter category name"
+        required
+        maxlength="80">
+
+      <label>Description</label>
+      <textarea
+        name="description"
+        [(ngModel)]="form.description"
+        placeholder="Describe this category..."
+        rows="3"
+        maxlength="250"></textarea>
+
+      <label>Parent Category</label>
+      <select name="parentId" [(ngModel)]="form.parentId">
+        <option [ngValue]="null">Main Category (No Parent)</option>
+        <option
+          *ngFor="let parent of parentCategories"
+          [ngValue]="parent.id">
+          {{ parent.name }}
+        </option>
+      </select>
+
+      <label>Category Icon</label>
+      <div class="icon-options">
+        <button
+          type="button"
+          *ngFor="let icon of ['📦','⚡','🔌','🔩','🛠️','🦺','⚙️','💡','🔧','🧰']"
+          [class.icon-selected]="form.icon === icon"
+          (click)="form.icon = icon">
+          {{ icon }}
+        </button>
+      </div>
+
+      <label>Category Status</label>
+      <select name="status" [(ngModel)]="form.status">
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+
+      <div class="modal-actions">
+        <button type="button" class="secondary-button" (click)="closeForm()">
+          Cancel
+        </button>
+        <button type="submit" class="primary-button">
+          {{ editingId !== null ? 'Save Changes' : 'Create Category' }}
+        </button>
+      </div>
+
+    </form>
+  </section>
+</div>
+
+<!-- DETAILS MODAL -->
+<div class="modal-backdrop" *ngIf="selectedCategory" (click)="closeDetails()">
+  <section class="details-modal" (click)="$event.stopPropagation()">
+    <button class="close-button details-close" (click)="closeDetails()">×</button>
+
+    <div class="details-icon">{{ selectedCategory.icon }}</div>
+    <span class="section-kicker">CATEGORY DETAILS</span>
+    <h2>{{ selectedCategory.name }}</h2>
+    <p>{{ selectedCategory.description }}</p>
+
+    <div class="details-row">
+      <span>Category Type</span>
+      <strong>{{ selectedParentName }}</strong>
+    </div>
+
+    <div class="details-row">
+      <span>Products</span>
+      <strong>{{ selectedCategory.productCount }}</strong>
+    </div>
+
+    <div class="details-row">
+      <span>Status</span>
+      <strong>{{ selectedCategory.status }}</strong>
+    </div>
+
+    <div class="details-row">
+      <span>Created Date</span>
+      <strong>{{ selectedCategory.createdAt }}</strong>
+    </div>
+
+    <button class="primary-button details-button"
+      (click)="closeDetails()">Close</button>
+  </section>
+</div>
+
+<!-- TOAST MESSAGE -->
+<div class="toast-message"
+  *ngIf="toastMessage"
+  [class.toast-error]="toastType === 'error'">
+  <span>{{ toastType === 'success' ? '✓' : '!' }}</span>
+  {{ toastMessage }}
+  <button (click)="closeToast()">×</button>
+</div>

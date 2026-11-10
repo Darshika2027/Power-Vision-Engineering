@@ -1,9 +1,12 @@
+
 package pve_bms_backend.service;
 
 import pve_bms_backend.entity.Category;
 import pve_bms_backend.repository.CategoryRepository;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -22,7 +25,9 @@ public class CategoryService {
 
     public Category getCategoryById(Long id) {
         return categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Category not found"));
     }
 
     public Category createCategory(Category category) {

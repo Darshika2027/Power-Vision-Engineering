@@ -1,8 +1,10 @@
+
 package pve_bms_backend.controller;
 
 import pve_bms_backend.entity.Category;
 import pve_bms_backend.service.CategoryService;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,7 +43,8 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteCategory(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
+        return ResponseEntity.noContent().build();
     }
 }

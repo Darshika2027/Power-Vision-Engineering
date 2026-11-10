@@ -1,3 +1,4 @@
+
 package pve_bms_backend.service;
 
 import pve_bms_backend.entity.Product;
@@ -5,7 +6,9 @@ import pve_bms_backend.entity.Category;
 import pve_bms_backend.repository.ProductRepository;
 import pve_bms_backend.repository.CategoryRepository;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -28,22 +31,31 @@ public class ProductService {
 
     public Product getProductById(Long id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Product not found"));
     }
 
     public Product createProduct(Product product) {
 
         if (productRepository.existsBySku(product.getSku())) {
-            throw new RuntimeException("SKU already exists");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "SKU already exists");
         }
 
         if (product.getBarcode() != null &&
                 productRepository.existsByBarcode(product.getBarcode())) {
-            throw new RuntimeException("Barcode already exists");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Barcode already exists");
         }
 
         Category category = categoryRepository.findById(
-                product.getCategory().getId()).orElseThrow(() -> new RuntimeException("Category not found"));
+                product.getCategory().getId()).orElseThrow(
+                        () -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Category not found"));
 
         product.setCategory(category);
 
@@ -62,7 +74,10 @@ public class ProductService {
         product.setActive(updatedProduct.isActive());
 
         Category category = categoryRepository.findById(
-                updatedProduct.getCategory().getId()).orElseThrow(() -> new RuntimeException("Category not found"));
+                updatedProduct.getCategory().getId()).orElseThrow(
+                        () -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Category not found"));
 
         product.setCategory(category);
 

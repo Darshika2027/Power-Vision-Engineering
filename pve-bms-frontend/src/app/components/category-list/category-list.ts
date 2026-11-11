@@ -1,7 +1,8 @@
 
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { CategoryService, Category as ApiCategory } from '../../services/category.service';
 
 interface Category {
   id: number;
@@ -22,59 +23,40 @@ interface Category {
   templateUrl: './category-list.html',
   styleUrl: './category-list.css'
 })
-export class CategoryList {
+export class CategoryList implements OnInit {
 
-  categories: Category[] = [
-    {
-      id: 1, name: 'Power Tools',
-      description: 'Electric and battery powered tools',
-      parentId: null, status: 'Active',
-      productCount: 45, icon: '⚡', color: 'blue',
-      createdAt: '2026-11-01'
-    },
-    {
-      id: 2, name: 'Electrical Wires',
-      description: 'Electrical cables and wiring products',
-      parentId: null, status: 'Active',
-      productCount: 32, icon: '〰️', color: 'purple',
-      createdAt: '2026-11-02'
-    },
-    {
-      id: 3, name: 'Electrical Switches',
-      description: 'Switches, sockets and accessories',
-      parentId: null, status: 'Active',
-      productCount: 28, icon: '🔌', color: 'green',
-      createdAt: '2026-11-03'
-    },
-    {
-      id: 4, name: 'Hardware',
-      description: 'Bolts, nuts and fixing accessories',
-      parentId: null, status: 'Active',
-      productCount: 37, icon: '🔩', color: 'orange',
-      createdAt: '2026-11-04'
-    },
-    {
-      id: 5, name: 'Safety Equipment',
-      description: 'Personal protective equipment',
-      parentId: null, status: 'Active',
-      productCount: 22, icon: '🦺', color: 'cyan',
-      createdAt: '2026-11-05'
-    },
-    {
-      id: 6, name: 'Spare Parts',
-      description: 'Replacement and repair parts',
-      parentId: null, status: 'Inactive',
-      productCount: 29, icon: '⚙️', color: 'pink',
-      createdAt: '2026-11-06'
-    },
-    {
-      id: 7, name: 'Drilling Tools',
-      description: 'Drills and drilling accessories',
-      parentId: 1, status: 'Active',
-      productCount: 12, icon: '🛠️', color: 'blue',
-      createdAt: '2026-11-07'
-    }
-  ];
+  constructor(private categoryService: CategoryService) {}
+
+  categories: Category[] = [];
+
+  ngOnInit(): void {
+    this.loadCategories();
+  }
+
+  loadCategories(): void {
+    this.categoryService.getCategories().subscribe({
+      next: (data) => {
+        this.categories = data.map(item => this.mapCategory(item));
+      },
+      error: () => {
+        this.showToast('Unable to load categories.', 'error');
+      }
+    });
+  }
+
+  mapCategory(item: ApiCategory): Category {
+    return {
+      id: item.id!,
+      name: item.name,
+      description: item.description || '',
+      parentId: null,
+      status: item.active ? 'Active' : 'Inactive',
+      productCount: 0,
+      icon: '📦',
+      color: 'blue',
+      createdAt: item.createdAt || ''
+    };
+  }
 
   searchText = '';
   statusFilter = 'All';
@@ -194,81 +176,83 @@ export class CategoryList {
       return;
     }
 
+    const categoryData: ApiCategory = {
+      name,
+      description: this.form.description.trim(),
+      active: this.form.status === 'Active'
+    };
+
     if (this.editingId !== null) {
-      const category = this.categories.find(
-        c => c.id === this.editingId
-      );
+      this.categoryService.updateCategory(
+        this.editingId,
+        categoryData
+      ).subscribe({
+        next: () => {
+          this.showToast('Category updated successfully.', 'success');
+          this.closeForm();
+          this.loadCategories();
+        },
+        error: () => {
+          this.showToast('Unable to update category.', 'error');
+        }
+      });
 
-      if (category) {
-        category.name = name;
-        category.description = this.form.description.trim();
-        category.parentId = this.form.parentId;
-        category.icon = this.form.icon;
-        category.status = this.form.status;
-      }
-
-      this.showToast('Category updated successfully.', 'success');
     } else {
-      const newCategory: Category = {
-        id: Date.now(),
-        name,
-        description: this.form.description.trim(),
-        parentId: this.form.parentId,
-        status: this.form.status,
-        productCount: 0,
-        icon: this.form.icon,
-        color: 'blue',
-        createdAt: new Date().toISOString().slice(0, 10)
-      };
-
-      this.categories.unshift(newCategory);
-      this.currentPage = 1;
-      this.showToast('New category created successfully.', 'success');
+      this.categoryService.createCategory(categoryData).subscribe({
+        next: () => {
+          this.currentPage = 1;
+          this.showToast('New category created successfully.', 'success');
+          this.closeForm();
+          this.loadCategories();
+        },
+        error: () => {
+          this.showToast('Unable to create category.', 'error');
+        }
+      });
     }
-
-    this.closeForm();
   }
 
   deleteCategory(category: Category): void {
-    const hasChildren = this.categories.some(
-      c => c.parentId === category.id
-    );
-
-    if (hasChildren) {
-      this.showToast(
-        'Move or delete its subcategories before deleting this category.',
-        'error'
-      );
-      return;
-    }
-
     if (category.productCount > 0) {
       this.showToast(
-        'This category contains products and cannot be deleted in this demo.',
+        'This category contains products and cannot be deleted.',
         'error'
       );
       return;
     }
 
-    this.categories = this.categories.filter(
-      c => c.id !== category.id
-    );
-
-    if (this.currentPage > this.totalPages) {
-      this.currentPage = this.totalPages;
-    }
-
-    this.showToast('Category deleted successfully.', 'success');
+    this.categoryService.deleteCategory(category.id).subscribe({
+      next: () => {
+        this.showToast('Category deleted successfully.', 'success');
+        this.loadCategories();
+      },
+      error: () => {
+        this.showToast('Unable to delete category.', 'error');
+      }
+    });
   }
 
   toggleStatus(category: Category): void {
-    category.status =
-      category.status === 'Active' ? 'Inactive' : 'Active';
+    const newStatus = category.status === 'Active' ? 'Inactive' : 'Active';
 
-    this.showToast(
-      `${category.name} status changed to ${category.status}.`,
-      'success'
-    );
+    const categoryData: ApiCategory = {
+      name: category.name,
+      description: category.description,
+      active: newStatus === 'Active'
+    };
+
+    this.categoryService.updateCategory(category.id, categoryData).subscribe({
+      next: () => {
+        this.showToast(
+          `${category.name} status changed to ${newStatus}.`,
+          'success'
+        );
+        this.loadCategories();
+      },
+      error: () => {
+        this.showToast('Unable to change category status.', 'error');
+      }
+    });
   }
 
   viewDetails(category: Category): void {

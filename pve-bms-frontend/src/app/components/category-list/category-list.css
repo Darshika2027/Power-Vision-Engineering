@@ -1181,3 +1181,149 @@ td {
     flex-direction: column;
   }
 }
+
+/* MAIN APPLICATION LAYOUT */
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f7fc;
+  color: #1a3159;
+  font-family: Arial, sans-serif;
+}
+
+.sidebar {
+  width: 245px;
+  min-width: 245px;
+  min-height: 100vh;
+  padding: 25px 17px;
+  background: #091b3d;
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 5px 35px;
+}
+
+.brand-logo {
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1688f5, #6550e9);
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.brand h2 {
+  margin: 0 0 5px;
+  font-size: 17px;
+}
+
+.brand span {
+  color: #9aabc9;
+  font-size: 10px;
+}
+
+.nav-label {
+  color: #7185a8;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 0 10px 13px;
+}
+
+.navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 12px;
+  border-radius: 9px;
+  color: #aebbd2;
+  text-decoration: none;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.nav-item.active {
+  color: white;
+  background: linear-gradient(100deg, #176fe4, #5149d9);
+}
+
+.nav-item:hover {
+  background: #ffffff12;
+  color: white;
+}
+
+.nav-count {
+  margin-left: auto;
+  background: #ffffff25;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+.sidebar-bottom {
+  margin-top: auto;
+  padding-top: 30px;
+}
+
+.sidebar-message {
+  padding: 18px;
+  background: #ffffff0c;
+  border: 1px solid #ffffff15;
+  border-radius: 12px;
+}
+
+.sidebar-message h3 {
+  font-size: 14px;
+  margin: 10px 0 5px;
+}
+
+.sidebar-message p {
+  color: #9aabc9;
+  font-size: 11px;
+  margin: 0;
+}
+
+.message-icon {
+  color: #65baff;
+  font-size: 22px;
+}
+
+.version {
+  display: block;
+  margin-top: 18px;
+  color: #7185a8;
+  font-size: 9px;
+}
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+  padding: 0 30px;
+  overflow: hidden;
+}
+
+@media (max-width: 760px) {
+  .sidebar {
+    width: 68px;
+    min-width: 68px;
+  }
+
+  .main-content {
+    padding: 0 12px;
+  }
+}
+

@@ -1,0 +1,71 @@
+<div class="product-page">
+  <h1>{{ pageTitle }}</h1>
+  <p>Manage products for Power Vision Engineering.</p>
+
+  <!-- Product List Section -->
+  <section class="product-section">
+    <h2>Product List</h2>
+    <p>View and manage products registered in the system.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Product Name</th>
+          <th>Category</th>
+          <th>Price (Rs.)</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (product of products; track product.id) {
+          <tr>
+            <td>{{ product.id }}</td>
+            <td>{{ product.name }}</td>
+            <td>{{ product.category }}</td>
+            <td>Rs. {{ product.sellingPrice.toFixed(2) }}</td>
+            <td>{{ product.status }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Register New Product Section -->
+  <section class="product-section">
+    <h2>Register New Product</h2>
+    <p>Enter the details of a new product.</p>
+
+    <label for="productName">Product Name</label>
+
+    <input
+      type="text"
+      id="productName"
+      placeholder="Enter product name"
+      [(ngModel)]="productName"
+    />
+
+    <label for="productCategory">Product Category</label>
+
+    <select id="productCategory" [(ngModel)]="productCategory">
+      <option value="">Select a category</option>
+      <option value="Lighting">Lighting</option>
+      <option value="Electrical Accessories">Electrical Accessories</option>
+      <option value="Power Tools">Power Tools</option>
+    </select>
+
+    <label for="sellingPrice">Selling Price (Rs.)</label>
+
+    <input
+      type="number"
+      id="sellingPrice"
+      placeholder="Enter selling price"
+      min="0"
+      step="0.01"
+      [(ngModel)]="sellingPrice"
+    />
+
+    <button type="button" (click)="registerProduct()">Register Product</button>
+  </section>
+</div>

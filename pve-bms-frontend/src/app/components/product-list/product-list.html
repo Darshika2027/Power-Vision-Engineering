@@ -1,98 +1,350 @@
-<div class="product-page">
-  <h1>{{ pageTitle }}</h1>
-  <p>Manage products for Power Vision Engineering.</p>
+<div class="app-screen">
+  <!-- Navy top navigation, matching the Power Vision Engineering brand -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-logo">PV</span>
+      <span class="brand-text"><strong>POWER VISION</strong><small>ENGINEERING</small></span>
+    </div>
 
-  <!-- Product List Section -->
-  <section class="product-section">
-    <h2>Product List</h2>
-    <p>View and manage products registered in the system.</p>
+    <nav class="top-links" aria-label="Main navigation">
+      <a routerLink="/" class="top-link">◇ <span>Categories</span></a>
+      <a routerLink="/products" class="top-link selected">⬡ <span>Products</span></a>
+    </nav>
 
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Product Name</th>
-            <th>Category</th>
-            <th>Price (Rs.)</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+    <div class="top-right">
+      <span class="online-dot"></span><span class="top-status">Management System</span>
+      <span class="avatar">A</span>
+      <span class="account-label">Administrator <small>Product Management</small></span>
+    </div>
+  </header>
 
-        <tbody>
-          @for (product of products; track product.id) {
-            <tr>
-              <td>{{ product.id }}</td>
-              <td>{{ product.name }}</td>
-              <td>{{ product.category }}</td>
-              <td>Rs. {{ product.sellingPrice.toFixed(2) }}</td>
-              <td>{{ product.status }}</td>
-              <td>
-                <button type="button" (click)="editProduct(product.id)">Edit</button>
-              </td>
-            </tr>
+  <div class="app-body">
+    <!-- These are visual menu placeholders until the other modules have routes. -->
+    <aside class="sidebar">
+      <div class="sidebar-project">
+        <div class="sidebar-logo">PVE</div>
+        <div><strong>PVE-BMS</strong><small>Business Management</small></div>
+      </div>
+      <p class="menu-label">MAIN MENU</p>
+      <nav class="side-links" aria-label="Modules">
+        <span class="side-link muted"><span class="menu-icon">⌂</span>Dashboard</span>
+        <a routerLink="/products" class="side-link active"
+          ><span class="menu-icon">⬡</span>Products</a
+        >
+        <a routerLink="/" class="side-link"><span class="menu-icon">▦</span>Categories</a>
+        <span class="side-link muted"><span class="menu-icon">▤</span>Inventory</span>
+        <span class="side-link muted"><span class="menu-icon">♧</span>Suppliers</span>
+        <span class="side-link muted"><span class="menu-icon">🛒</span>Sales (POS)</span>
+        <span class="side-link muted"><span class="menu-icon">⚒</span>Repairs</span>
+        <span class="side-link muted"><span class="menu-icon">⚙</span>Settings</span>
+      </nav>
+      <div class="sidebar-bottom">POWER VISION ENGINEERING</div>
+    </aside>
+
+    <main class="workspace">
+      <div class="breadcrumb">
+        <span>⌂</span> / Products / <strong>Product Catalogue Management</strong>
+      </div>
+
+      <div class="workspace-grid">
+        <!-- Left: main dashboard -->
+        <div class="main-column">
+          <section class="hero">
+            <div class="hero-copy">
+              <p class="eyebrow">PRODUCTS</p>
+              <h1>Product Catalogue <span>Management</span></h1>
+              <p>Create, organize, view and update product records with ease.</p>
+              <div class="hero-mark"></div>
+            </div>
+            <div class="hero-art" aria-hidden="true">
+              <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M60 14 99 35v49l-39 22L21 84V35L60 14Z"
+                  stroke="white"
+                  stroke-width="5"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="m21 35 39 23 39-23M60 58v48"
+                  stroke="white"
+                  stroke-width="5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+          </section>
+
+          <section class="stats" aria-label="Catalogue statistics">
+            <div class="stat-card">
+              <span class="stat-icon blue">▧</span>
+              <div>
+                <p>Total Products</p>
+                <strong>{{ totalProducts }}</strong
+                ><small>All registered products</small>
+              </div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon green">✓</span>
+              <div>
+                <p>Active Products</p>
+                <strong>{{ activeProducts }}</strong
+                ><small>Currently active</small>
+              </div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon amber">◉</span>
+              <div>
+                <p>Inactive Products</p>
+                <strong>{{ inactiveProducts }}</strong
+                ><small>Currently inactive</small>
+              </div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon purple">▦</span>
+              <div>
+                <p>Categories</p>
+                <strong>{{ categories.length }}</strong
+                ><small>Demo category options</small>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel catalogue-card">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">PRODUCT CATALOGUE</p>
+                <h2>Manage Products</h2>
+                <p class="supporting-text">View, search and manage all product records.</p>
+              </div>
+              <button
+                class="primary-button add-button"
+                type="button"
+                (click)="
+                  startNewProduct(); editor.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                "
+              >
+                + Add New Product
+              </button>
+            </div>
+
+            <div class="filters">
+              <label class="search-field">
+                <span aria-hidden="true">⌕</span>
+                <input
+                  type="search"
+                  [(ngModel)]="searchText"
+                  placeholder="Search SKU, name or barcode"
+                  aria-label="Search products"
+                />
+              </label>
+              <select [(ngModel)]="selectedCategory" aria-label="Filter by category">
+                <option value="all">All Categories</option>
+                @for (category of categories; track category) {
+                  <option [value]="category">{{ category }}</option>
+                }
+              </select>
+              <select [(ngModel)]="selectedStatus" aria-label="Filter by status">
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>SKU</th>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Cost Price</th>
+                    <th>Selling Price</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (product of filteredProducts; track product.id) {
+                    <tr>
+                      <td class="sku">{{ product.sku }}</td>
+                      <td>
+                        <span class="product-name"
+                          ><span class="product-emoji">{{ product.icon }}</span
+                          >{{ product.name }}</span
+                        >
+                      </td>
+                      <td>
+                        <span class="category-pill">{{ product.category }}</span>
+                      </td>
+                      <td>{{ formatPrice(product.costPrice) }}</td>
+                      <td class="selling-price">{{ formatPrice(product.sellingPrice) }}</td>
+                      <td>
+                        <span class="status-pill" [class.inactive]="!product.active"
+                          >● {{ product.active ? 'Active' : 'Inactive' }}</span
+                        >
+                      </td>
+                      <td>
+                        <div class="table-actions">
+                          <button
+                            type="button"
+                            class="icon-button edit"
+                            title="Edit product"
+                            [attr.aria-label]="'Edit ' + product.name"
+                            (click)="
+                              editProduct(product);
+                              editor.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                            "
+                          >
+                            ✎
+                          </button>
+                          <button
+                            type="button"
+                            class="icon-button delete"
+                            title="Delete product"
+                            [attr.aria-label]="'Delete ' + product.name"
+                            (click)="deleteProduct(product)"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="7" class="empty-state">No products match your search.</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <div class="table-footer">
+              Showing {{ filteredProducts.length }} of {{ totalProducts }} demo products
+            </div>
+          </section>
+        </div>
+
+        <!-- Right: create/edit form -->
+        <aside class="panel editor-card" #editor>
+          <div class="editor-heading">
+            <span class="editor-heading-icon">▤</span>
+            <div>
+              <p class="section-kicker">
+                {{ editingProductId === null ? 'ADD NEW PRODUCT' : 'EDIT PRODUCT' }}
+              </p>
+              <h2>{{ editingProductId === null ? 'Add New Product' : 'Edit Product' }}</h2>
+              <p class="supporting-text">
+                {{
+                  editingProductId === null
+                    ? 'Register a product in the catalogue.'
+                    : 'Update the selected product details.'
+                }}
+              </p>
+            </div>
+          </div>
+
+          @if (message) {
+            <div class="form-message" [class.error]="messageType === 'error'" role="status">
+              {{ message }}
+            </div>
           }
-        </tbody>
-      </table>
-    </div>
-  </section>
 
-  <!-- Product Registration and Editing Section -->
-  <section class="product-section">
-    <h2>
-      {{ editingProductId === null ? 'Register New Product' : 'Edit Product' }}
-    </h2>
+          <div class="form-fields">
+            <label for="sku">SKU <span class="required">*</span></label>
+            <input
+              id="sku"
+              type="text"
+              [(ngModel)]="form.sku"
+              [disabled]="editingProductId !== null"
+              placeholder="Enter unique product SKU"
+              maxlength="50"
+            />
+            @if (editingProductId !== null) {
+              <small class="field-note">SKU cannot be changed when editing.</small>
+            }
 
-    <p>
-      {{
-        editingProductId === null
-          ? 'Enter the details of a new product.'
-          : 'Update the selected product details.'
-      }}
-    </p>
+            <label for="productName">Product Name <span class="required">*</span></label>
+            <input
+              id="productName"
+              type="text"
+              [(ngModel)]="form.name"
+              placeholder="Enter product name"
+              maxlength="150"
+            />
 
-    <!-- Product Name -->
-    <label for="productName">Product Name</label>
-    <input
-      type="text"
-      id="productName"
-      placeholder="Enter product name"
-      [(ngModel)]="productName"
-    />
+            <label for="barcode">Barcode</label>
+            <input
+              id="barcode"
+              type="text"
+              [(ngModel)]="form.barcode"
+              placeholder="Optional barcode"
+              maxlength="100"
+            />
 
-    <!-- Product Category -->
-    <label for="productCategory">Product Category</label>
-    <select id="productCategory" [(ngModel)]="productCategory">
-      <option value="">Select a category</option>
-      <option value="Lighting">Lighting</option>
-      <option value="Electrical Accessories">Electrical Accessories</option>
-      <option value="Power Tools">Power Tools</option>
-    </select>
+            <label for="category">Category <span class="required">*</span></label>
+            <select id="category" [(ngModel)]="form.category">
+              <option value="">Select Category</option>
+              @for (category of categories; track category) {
+                <option [value]="category">{{ category }}</option>
+              }
+            </select>
 
-    <!-- Selling Price -->
-    <label for="sellingPrice">Selling Price (Rs.)</label>
-    <input
-      type="number"
-      id="sellingPrice"
-      placeholder="Enter selling price"
-      min="0"
-      step="0.01"
-      [(ngModel)]="sellingPrice"
-    />
+            <div class="price-grid">
+              <div>
+                <label for="costPrice">Cost Price (Rs.) <span class="required">*</span></label>
+                <input
+                  id="costPrice"
+                  type="number"
+                  [(ngModel)]="form.costPrice"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                />
+              </div>
+              <div>
+                <label for="sellingPrice"
+                  >Selling Price (Rs.) <span class="required">*</span></label
+                >
+                <input
+                  id="sellingPrice"
+                  type="number"
+                  [(ngModel)]="form.sellingPrice"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
 
-    <!-- Action Buttons -->
-    <div class="form-actions">
-      <button
-        type="button"
-        (click)="editingProductId === null ? registerProduct() : updateProduct()"
-      >
-        {{ editingProductId === null ? 'Register Product' : 'Update Product' }}
-      </button>
+            <label for="description">Description</label>
+            <textarea
+              id="description"
+              rows="3"
+              [(ngModel)]="form.description"
+              placeholder="Enter product description..."
+            ></textarea>
 
-      @if (editingProductId !== null) {
-        <button type="button" class="secondary-button" (click)="cancelEdit()">Cancel Edit</button>
-      }
-    </div>
-  </section>
+            <div class="toggle-row">
+              <div><strong>Product Status</strong><small>Available for use when active</small></div>
+              <label class="switch" aria-label="Product active status">
+                <input type="checkbox" [(ngModel)]="form.active" />
+                <span class="switch-track"></span>
+              </label>
+              <span class="toggle-state">{{ form.active ? 'Active' : 'Inactive' }}</span>
+            </div>
+
+            <div class="form-buttons">
+              <button type="button" class="primary-button save-button" (click)="saveProduct()">
+                {{ editingProductId === null ? 'Save Product' : 'Update Product' }}
+              </button>
+              <button type="button" class="secondary-button" (click)="resetForm()">
+                {{ editingProductId === null ? 'Reset' : 'Cancel Edit' }}
+              </button>
+            </div>
+          </div>
+          <p class="demo-note">Frontend demo only — data is not yet saved in the database.</p>
+        </aside>
+      </div>
+    </main>
+  </div>
 </div>

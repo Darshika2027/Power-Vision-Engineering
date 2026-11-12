@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/categories")
-@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:4201"})
+@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:4201", "http://localhost:64790"})
 public class CategoryController {
 
     private final CategoryService categoryService;
@@ -48,4 +48,5 @@ public class CategoryController {
         return ResponseEntity.noContent().build();
     }
 }
+
 

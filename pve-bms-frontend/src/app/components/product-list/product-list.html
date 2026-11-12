@@ -101,8 +101,8 @@
       </div>
 
       <div class="form-actions">
-        <button type="submit" class="primary"
-          [disabled]="productForm.invalid || product.categoryId === 0">
+        <button type="button" class="primary"
+          (click)="saveProduct()">
           {{ isEditing ? 'Update Product' : 'Add Product' }}
         </button>
 
@@ -116,7 +116,7 @@
   <section class="table-card">
     <div class="table-header">
       <div>
-        <h2>Product List</h2>
+        <h2>Product List</h2><p>Loaded Products: {{ products.length }}</p>
         <p>View and manage registered products</p>
       </div>
 
@@ -170,3 +170,6 @@
   </section>
 
 </div>
+
+
+

@@ -7,38 +7,53 @@
     <h2>Product List</h2>
     <p>View and manage products registered in the system.</p>
 
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Product Name</th>
-          <th>Category</th>
-          <th>Price (Rs.)</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        @for (product of products; track product.id) {
+    <div class="table-container">
+      <table>
+        <thead>
           <tr>
-            <td>{{ product.id }}</td>
-            <td>{{ product.name }}</td>
-            <td>{{ product.category }}</td>
-            <td>Rs. {{ product.sellingPrice.toFixed(2) }}</td>
-            <td>{{ product.status }}</td>
+            <th>ID</th>
+            <th>Product Name</th>
+            <th>Category</th>
+            <th>Price (Rs.)</th>
+            <th>Status</th>
+            <th>Actions</th>
           </tr>
-        }
-      </tbody>
-    </table>
+        </thead>
+
+        <tbody>
+          @for (product of products; track product.id) {
+            <tr>
+              <td>{{ product.id }}</td>
+              <td>{{ product.name }}</td>
+              <td>{{ product.category }}</td>
+              <td>Rs. {{ product.sellingPrice.toFixed(2) }}</td>
+              <td>{{ product.status }}</td>
+              <td>
+                <button type="button" (click)="editProduct(product.id)">Edit</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
   </section>
 
-  <!-- Register New Product Section -->
+  <!-- Product Registration and Editing Section -->
   <section class="product-section">
-    <h2>Register New Product</h2>
-    <p>Enter the details of a new product.</p>
+    <h2>
+      {{ editingProductId === null ? 'Register New Product' : 'Edit Product' }}
+    </h2>
 
+    <p>
+      {{
+        editingProductId === null
+          ? 'Enter the details of a new product.'
+          : 'Update the selected product details.'
+      }}
+    </p>
+
+    <!-- Product Name -->
     <label for="productName">Product Name</label>
-
     <input
       type="text"
       id="productName"
@@ -46,8 +61,8 @@
       [(ngModel)]="productName"
     />
 
+    <!-- Product Category -->
     <label for="productCategory">Product Category</label>
-
     <select id="productCategory" [(ngModel)]="productCategory">
       <option value="">Select a category</option>
       <option value="Lighting">Lighting</option>
@@ -55,8 +70,8 @@
       <option value="Power Tools">Power Tools</option>
     </select>
 
+    <!-- Selling Price -->
     <label for="sellingPrice">Selling Price (Rs.)</label>
-
     <input
       type="number"
       id="sellingPrice"
@@ -66,6 +81,18 @@
       [(ngModel)]="sellingPrice"
     />
 
-    <button type="button" (click)="registerProduct()">Register Product</button>
+    <!-- Action Buttons -->
+    <div class="form-actions">
+      <button
+        type="button"
+        (click)="editingProductId === null ? registerProduct() : updateProduct()"
+      >
+        {{ editingProductId === null ? 'Register Product' : 'Update Product' }}
+      </button>
+
+      @if (editingProductId !== null) {
+        <button type="button" class="secondary-button" (click)="cancelEdit()">Cancel Edit</button>
+      }
+    </div>
   </section>
 </div>

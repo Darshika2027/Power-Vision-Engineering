@@ -58,8 +58,14 @@ export class ProductList implements OnInit {
 
   loadProducts(): void {
     this.productService.getProducts().subscribe({
-      next: data => this.products = data,
-      error: () => this.errorMessage = 'Unable to load products.'
+      next: data => {
+        console.log('PRODUCT DATA:', data);
+        this.products = data;
+      },
+      error: err => {
+        console.error('PRODUCT LOAD ERROR:', err);
+        this.errorMessage = 'Unable to load products: ' + err.message;
+      }
     });
   }
 
@@ -166,3 +172,4 @@ export class ProductList implements OnInit {
     this.editingId = null;
   }
 }
+

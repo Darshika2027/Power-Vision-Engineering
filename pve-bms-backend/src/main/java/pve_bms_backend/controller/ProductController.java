@@ -9,7 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:4201"})
+@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:4201", "http://localhost:64790"})
 public class ProductController {
 
     private final ProductService productService;
@@ -45,3 +45,4 @@ public class ProductController {
         productService.deleteProduct(id);
     }
 }
+

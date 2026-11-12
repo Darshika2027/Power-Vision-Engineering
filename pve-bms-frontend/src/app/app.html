@@ -1,6 +1,30 @@
-<nav style="padding:20px;background:#172554;color:white;display:flex;gap:25px;">
-  <a routerLink="/" style="color:white;text-decoration:none;">Categories</a>
-  <a routerLink="/products" style="color:white;text-decoration:none;">Products</a>
-</nav>
+<header class="navbar">
+  <div class="brand">
+    <div class="brand-logo">PV</div>
+    <div class="brand-text">
+      <h2>POWER VISION</h2>
+      <span>ENGINEERING</span>
+    </div>
+  </div>
 
-<router-outlet></router-outlet>
+  <nav class="nav-links">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
+      <span class="nav-icon">?</span>
+      Categories
+    </a>
+
+    <a routerLink="/products" routerLinkActive="active">
+      <span class="nav-icon">?</span>
+      Products
+    </a>
+  </nav>
+
+  <div class="nav-right">
+    <span class="system-status"></span>
+    <span>Management System</span>
+  </div>
+</header>
+
+<main class="main-content">
+  <router-outlet></router-outlet>
+</main>

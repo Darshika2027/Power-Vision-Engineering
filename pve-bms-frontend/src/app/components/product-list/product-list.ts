@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -11,15 +12,20 @@ import { ProductService } from '../../services/product';
   templateUrl: './product-list.html',
   styleUrl: './product-list.css'
 })
-export class ProductList implements OnInit {
+export class ProductList implements OnInit, OnDestroy {
 
   products: any[] = [];
   categories: any[] = [];
   searchText = '';
   isEditing = false;
   editingId: number | null = null;
+
   errorMessage = '';
   successMessage = '';
+  showSuccessPopup = false;
+  successPopupMessage = '';
+
+  private successPopupTimer: ReturnType<typeof setTimeout> | null = null;
 
   product = {
     sku: '',
@@ -36,12 +42,19 @@ export class ProductList implements OnInit {
 
   constructor(
     private productService: ProductService,
-    private http: HttpClient
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.loadProducts();
     this.loadCategories();
+  }
+
+  ngOnDestroy(): void {
+    if (this.successPopupTimer !== null) {
+      clearTimeout(this.successPopupTimer);
+    }
   }
 
   get totalProducts(): number {
@@ -59,20 +72,27 @@ export class ProductList implements OnInit {
   loadProducts(): void {
     this.productService.getProducts().subscribe({
       next: data => {
-        console.log('PRODUCT DATA:', data);
         this.products = data;
+        this.cdr.detectChanges();
       },
       error: err => {
         console.error('PRODUCT LOAD ERROR:', err);
-        this.errorMessage = 'Unable to load products: ' + err.message;
+        this.errorMessage = 'Unable to load products.';
+        this.cdr.detectChanges();
       }
     });
   }
 
   loadCategories(): void {
     this.http.get<any[]>(this.categoryUrl).subscribe({
-      next: data => this.categories = data,
-      error: () => this.errorMessage = 'Unable to load categories.'
+      next: data => {
+        this.categories = data;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.errorMessage = 'Unable to load categories.';
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -87,14 +107,50 @@ export class ProductList implements OnInit {
     );
   }
 
+  showProductSuccess(message: string): void {
+    console.log('SUCCESS POPUP TRIGGERED:', message);
+
+    if (this.successPopupTimer !== null) {
+      clearTimeout(this.successPopupTimer);
+    }
+
+    this.successPopupMessage = message;
+    this.showSuccessPopup = true;
+
+    this.cdr.detectChanges();
+
+    console.log('POPUP STATE:', this.showSuccessPopup);
+
+    this.successPopupTimer = setTimeout(() => {
+      this.showSuccessPopup = false;
+      this.successPopupTimer = null;
+      this.cdr.detectChanges();
+    }, 1000);
+  }
+
   saveProduct(): void {
+    console.log('SAVE PRODUCT FUNCTION CALLED');
+
     this.errorMessage = '';
     this.successMessage = '';
 
+    if (
+      !this.product.sku.trim() ||
+      !this.product.name.trim() ||
+      !this.product.categoryId ||
+      this.product.costPrice <= 0 ||
+      this.product.sellingPrice <= 0
+    ) {
+      this.errorMessage = 'Please fill all required fields correctly.';
+      console.log('PRODUCT VALIDATION FAILED');
+      this.cdr.detectChanges();
+      return;
+    }
+
     const payload = {
-      sku: this.product.sku,
-      name: this.product.name,
-      barcode: this.product.barcode || null,
+      sku: this.product.sku.trim(),
+      name: this.product.name.trim(),
+      barcode: this.product.barcode.trim() || null,
       description: this.product.description,
       costPrice: Number(this.product.costPrice),
       sellingPrice: Number(this.product.sellingPrice),
@@ -102,22 +158,36 @@ export class ProductList implements OnInit {
       category: { id: Number(this.product.categoryId) }
     };
 
-    const request = this.isEditing && this.editingId !== null
+    const editing = this.isEditing;
+
+    const request = editing && this.editingId !== null
       ? this.productService.updateProduct(this.editingId, payload)
       : this.productService.addProduct(payload);
 
     request.subscribe({
       next: () => {
-        this.successMessage = this.isEditing
+        console.log('PRODUCT SAVE SUCCESS');
+
+        const message = editing
           ? 'Product updated successfully!'
           : 'Product added successfully!';
+
         this.resetForm();
         this.loadProducts();
+
+        this.successMessage = message;
+        this.showProductSuccess(message);
       },
       error: err => {
-        this.errorMessage = err.error?.detail ||
+        console.error('PRODUCT SAVE ERROR:', err);
+
+        this.errorMessage =
+          err.error?.detail ||
           err.error?.message ||
+          err.error?.error ||
           'Unable to save product. Please check the details.';
+
+        this.cdr.detectChanges();
       }
     });
   }
@@ -139,6 +209,9 @@ export class ProductList implements OnInit {
 
     this.successMessage = '';
     this.errorMessage = '';
+
+    this.cdr.detectChanges();
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -147,12 +220,26 @@ export class ProductList implements OnInit {
       return;
     }
 
+    this.errorMessage = '';
+    this.successMessage = '';
+
     this.productService.deleteProduct(id).subscribe({
       next: () => {
-        this.successMessage = 'Product deleted successfully!';
         this.loadProducts();
+
+        this.successMessage = 'Product deleted successfully!';
+        this.showProductSuccess(this.successMessage);
       },
-      error: () => this.errorMessage = 'Unable to delete product.'
+      error: err => {
+        console.error('PRODUCT DELETE ERROR:', err);
+
+        this.errorMessage =
+          err.error?.detail ||
+          err.error?.message ||
+          'Unable to delete product.';
+
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -170,6 +257,7 @@ export class ProductList implements OnInit {
 
     this.isEditing = false;
     this.editingId = null;
+
+    this.cdr.detectChanges();
   }
 }
-

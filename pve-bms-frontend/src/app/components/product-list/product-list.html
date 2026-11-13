@@ -1,3 +1,4 @@
+
 <div class="page">
 
   <div class="page-header">
@@ -8,6 +9,14 @@
     <div class="total">
       Product Management
     </div>
+  </div>
+
+  <p style="color:red; font-weight:bold;">
+    Popup State: {{ showSuccessPopup }}
+  </p>
+
+  <div class="message error" *ngIf="errorMessage">
+    {{ errorMessage }}
   </div>
 
   <div class="stats-grid">
@@ -30,14 +39,6 @@
     </div>
   </div>
 
-  <div class="message success" *ngIf="successMessage">
-    {{ successMessage }}
-  </div>
-
-  <div class="message error" *ngIf="errorMessage">
-    {{ errorMessage }}
-  </div>
-
   <section class="form-card">
     <h2>{{ isEditing ? 'Edit Product' : 'Add New Product' }}</h2>
 
@@ -46,25 +47,37 @@
 
         <div class="field">
           <label>SKU *</label>
-          <input name="sku" [(ngModel)]="product.sku"
-            placeholder="Enter SKU" required [disabled]="isEditing">
+          <input
+            name="sku"
+            [(ngModel)]="product.sku"
+            placeholder="Enter SKU"
+            required
+            [disabled]="isEditing">
         </div>
 
         <div class="field">
           <label>Product Name *</label>
-          <input name="name" [(ngModel)]="product.name"
-            placeholder="Enter product name" required>
+          <input
+            name="name"
+            [(ngModel)]="product.name"
+            placeholder="Enter product name"
+            required>
         </div>
 
         <div class="field">
           <label>Barcode</label>
-          <input name="barcode" [(ngModel)]="product.barcode"
+          <input
+            name="barcode"
+            [(ngModel)]="product.barcode"
             placeholder="Enter barcode">
         </div>
 
         <div class="field">
           <label>Category *</label>
-          <select name="categoryId" [(ngModel)]="product.categoryId" required>
+          <select
+            name="categoryId"
+            [(ngModel)]="product.categoryId"
+            required>
             <option [ngValue]="0" disabled>Select Category</option>
             <option *ngFor="let c of categories" [ngValue]="c.id">
               {{ c.name }}
@@ -74,26 +87,40 @@
 
         <div class="field">
           <label>Cost Price *</label>
-          <input type="number" name="costPrice"
-            [(ngModel)]="product.costPrice" min="0.01" step="0.01" required>
+          <input
+            type="number"
+            name="costPrice"
+            [(ngModel)]="product.costPrice"
+            min="0.01"
+            step="0.01"
+            required>
         </div>
 
         <div class="field">
           <label>Selling Price *</label>
-          <input type="number" name="sellingPrice"
-            [(ngModel)]="product.sellingPrice" min="0.01" step="0.01" required>
+          <input
+            type="number"
+            name="sellingPrice"
+            [(ngModel)]="product.sellingPrice"
+            min="0.01"
+            step="0.01"
+            required>
         </div>
 
         <div class="field full">
           <label>Description</label>
-          <textarea name="description"
+          <textarea
+            name="description"
             [(ngModel)]="product.description"
             placeholder="Enter product description"></textarea>
         </div>
 
         <div class="field full checkbox-field">
           <label>
-            <input type="checkbox" name="active" [(ngModel)]="product.active">
+            <input
+              type="checkbox"
+              name="active"
+              [(ngModel)]="product.active">
             Active Product
           </label>
         </div>
@@ -101,12 +128,17 @@
       </div>
 
       <div class="form-actions">
-        <button type="button" class="primary"
+        <button
+          type="button"
+          class="primary"
           (click)="saveProduct()">
           {{ isEditing ? 'Update Product' : 'Add Product' }}
         </button>
 
-        <button type="button" class="secondary" (click)="resetForm()">
+        <button
+          type="button"
+          class="secondary"
+          (click)="resetForm()">
           Clear
         </button>
       </div>
@@ -116,11 +148,14 @@
   <section class="table-card">
     <div class="table-header">
       <div>
-        <h2>Product List</h2><p>Loaded Products: {{ products.length }}</p>
+        <h2>Product List</h2>
+        <p>Loaded Products: {{ products.length }}</p>
         <p>View and manage registered products</p>
       </div>
 
-      <input class="search" type="text"
+      <input
+        class="search"
+        type="text"
         [(ngModel)]="searchText"
         placeholder="Search by name, SKU or category...">
     </div>
@@ -152,17 +187,24 @@
               </span>
             </td>
             <td class="actions">
-              <button type="button" class="edit"
-                (click)="editProduct(p)">Edit</button>
-              <button type="button" class="delete"
-                (click)="deleteProduct(p.id)">Delete</button>
+              <button
+                type="button"
+                class="edit"
+                (click)="editProduct(p)">
+                Edit
+              </button>
+
+              <button
+                type="button"
+                class="delete"
+                (click)="deleteProduct(p.id)">
+                Delete
+              </button>
             </td>
           </tr>
 
           <tr *ngIf="filteredProducts.length === 0">
-            <td colspan="7" class="empty">
-              No products found.
-            </td>
+            <td colspan="7" class="empty">No products found.</td>
           </tr>
         </tbody>
       </table>
@@ -171,5 +213,24 @@
 
 </div>
 
+<!-- SUCCESS POPUP -->
+<div
+  class="success-overlay"
+  [style.display]="showSuccessPopup ? 'flex' : 'none'"
+  role="alert"
+  aria-live="polite">
 
+  <div class="success-popup">
+    <div class="success-popup-icon">
+      <span>&#10003;</span>
+    </div>
 
+    <h2>Success!</h2>
+    <p>{{ successPopupMessage }}</p>
+
+    <span class="success-description">
+      Your action has been completed successfully.
+    </span>
+  </div>
+
+</div>

@@ -23,6 +23,10 @@ public class ProductController {
         return productService.getAllProducts();
     }
 
+    @GetMapping("/barcode/{barcode}")
+    public Product getProductByBarcode(@PathVariable String barcode) {
+        return productService.getProductByBarcode(barcode);
+    }
     @GetMapping("/{id}")
     public Product getProductById(@PathVariable Long id) {
         return productService.getProductById(id);

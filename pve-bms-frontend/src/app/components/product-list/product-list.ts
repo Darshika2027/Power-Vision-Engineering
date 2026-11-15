@@ -1,8 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
-// Product data structure
+// ----------------------------------
+// FRONTEND PRODUCT STRUCTURE
+// ----------------------------------
+
 interface Product {
   id: number;
   sku: string;
@@ -16,7 +20,10 @@ interface Product {
   icon: string;
 }
 
-// Product registration form structure
+// ----------------------------------
+// PRODUCT FORM STRUCTURE
+// ----------------------------------
+
 interface ProductForm {
   sku: string;
   name: string;
@@ -28,6 +35,39 @@ interface ProductForm {
   active: boolean;
 }
 
+// ----------------------------------
+// BACKEND CATEGORY STRUCTURE
+// ----------------------------------
+
+interface BackendCategory {
+  id: number;
+  name: string;
+  description: string | null;
+  active: boolean;
+  createdAt?: string;
+}
+
+// ----------------------------------
+// BACKEND PRODUCT STRUCTURE
+// ----------------------------------
+
+interface BackendProduct {
+  id: number;
+  sku: string;
+  name: string;
+  barcode: string | null;
+  category: BackendCategory;
+  costPrice: number | string;
+  sellingPrice: number | string;
+  description: string | null;
+  active: boolean;
+  createdAt?: string;
+}
+
+// ----------------------------------
+// ANGULAR COMPONENT
+// ----------------------------------
+
 @Component({
   selector: 'app-product-list',
   standalone: true,
@@ -35,87 +75,146 @@ interface ProductForm {
   templateUrl: './product-list.html',
   styleUrl: './product-list.css',
 })
-export class ProductList {
-  // Sample categories
-  // Later, these will come from the backend database.
-  categories = [
-    'Lighting',
-    'Electrical Accessories',
-    'Power Tools',
-    'Hardware',
-    'Safety Equipment',
-  ];
+export class ProductList implements OnInit {
+  // ----------------------------------
+  // BACKEND API URLS
+  // ----------------------------------
 
-  // Sample product records
-  // These products are stored temporarily in memory.
-  products: Product[] = [
-    {
-      id: 1,
-      sku: 'PVE-1001',
-      name: 'LED Bulb 12W',
-      barcode: '10010001',
-      category: 'Lighting',
-      costPrice: 540,
-      sellingPrice: 850,
-      description: 'Energy-saving LED bulb',
-      active: true,
-      icon: '💡',
-    },
-    {
-      id: 2,
-      sku: 'PVE-1002',
-      name: 'Extension Cord 5m',
-      barcode: '10010002',
-      category: 'Electrical Accessories',
-      costPrice: 970,
-      sellingPrice: 1500,
-      description: 'Five-metre extension cable',
-      active: true,
-      icon: '🔌',
-    },
-    {
-      id: 3,
-      sku: 'PVE-1003',
-      name: 'Cordless Drill 18V',
-      barcode: '10010003',
-      category: 'Power Tools',
-      costPrice: 12500,
-      sellingPrice: 16900,
-      description: 'Battery-powered drill',
-      active: true,
-      icon: '🛠️',
-    },
-    {
-      id: 4,
-      sku: 'PVE-1004',
-      name: 'Safety Gloves',
-      barcode: '10010004',
-      category: 'Safety Equipment',
-      costPrice: 600,
-      sellingPrice: 950,
-      description: 'Protective work gloves',
-      active: false,
-      icon: '🧤',
-    },
-  ];
+  private readonly productApiUrl = 'http://localhost:8080/api/products';
 
-  // Next temporary Product ID
-  private nextId = 5;
+  private readonly categoryApiUrl = 'http://localhost:8080/api/categories';
 
-  // Search and filter variables
+  // ----------------------------------
+  // CONSTRUCTOR
+  // ----------------------------------
+
+  constructor(
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef,
+  ) {}
+
+  // ----------------------------------
+  // REAL DATABASE DATA
+  // ----------------------------------
+
+  products: Product[] = [];
+
+  categories: string[] = [];
+
+  backendCategories: BackendCategory[] = [];
+
+  // ----------------------------------
+  // SEARCH AND FILTER VARIABLES
+  // ----------------------------------
+
   searchText = '';
+
   selectedCategory = 'all';
+
   selectedStatus = 'all';
 
-  // Remember which product is being edited
+  // ----------------------------------
+  // EDITING PRODUCT
+  // ----------------------------------
+
   editingProductId: number | null = null;
 
-  // Success and error messages
+  // ----------------------------------
+  // SUCCESS AND ERROR MESSAGES
+  // ----------------------------------
+
   message = '';
+
   messageType: 'success' | 'error' = 'success';
 
-  // Registration form
+  // ----------------------------------
+  // PRODUCT FORM
+  // ----------------------------------
+
   form: ProductForm = this.emptyForm();
+
+  // ----------------------------------
+  // INITIALIZE COMPONENT
+  // ----------------------------------
+
+  ngOnInit(): void {
+    this.loadProducts();
+    this.loadCategories();
+  }
+
+  // ----------------------------------
+  // LOAD PRODUCTS FROM SPRING BOOT
+  // ----------------------------------
+
+  loadProducts(): void {
+    this.http.get<BackendProduct[]>(this.productApiUrl).subscribe({
+      next: (data) => {
+        this.products = data.map((product) => this.convertBackendProduct(product));
+
+        console.log('Real products loaded:', this.products);
+
+        this.cdr.detectChanges();
+      },
+
+      error: (error) => {
+        console.error('Error loading products:', error);
+
+        this.showMessage('Could not load products from the backend.', 'error');
+
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  // ----------------------------------
+  // LOAD CATEGORIES FROM SPRING BOOT
+  // ----------------------------------
+
+  loadCategories(): void {
+    this.http.get<BackendCategory[]>(this.categoryApiUrl).subscribe({
+      next: (data) => {
+        this.backendCategories = data;
+
+        this.categories = data
+          .filter((category) => category.active)
+          .map((category) => category.name);
+
+        console.log('Real categories loaded:', this.backendCategories);
+
+        this.cdr.detectChanges();
+      },
+
+      error: (error) => {
+        console.error('Error loading categories:', error);
+
+        this.showMessage('Could not load categories from the backend.', 'error');
+
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  // ----------------------------------
+  // CONVERT BACKEND PRODUCT
+  // TO FRONTEND PRODUCT
+  // ----------------------------------
+
+  private convertBackendProduct(product: BackendProduct): Product {
+    const categoryName = product.category?.name ?? '';
+
+    return {
+      id: product.id,
+      sku: product.sku,
+      name: product.name,
+      barcode: product.barcode ?? '',
+      category: categoryName,
+      costPrice: Number(product.costPrice),
+      sellingPrice: Number(product.sellingPrice),
+      description: product.description ?? '',
+      active: product.active,
+      icon: this.iconForCategory(categoryName),
+    };
+  }
 
   // ----------------------------------
   // PRODUCT STATISTICS
@@ -207,20 +306,29 @@ export class ProductList {
 
   saveProduct(): void {
     const sku = this.form.sku.trim().toUpperCase();
+
     const name = this.form.name.trim();
+
     const barcode = this.form.barcode.trim();
 
     const cost = this.form.costPrice;
+
     const selling = this.form.sellingPrice;
 
-    // Validate required fields
+    // ----------------------------------
+    // VALIDATE REQUIRED FIELDS
+    // ----------------------------------
+
     if (!sku || !name || !this.form.category) {
       this.showMessage('Please complete SKU, Product Name and Category.', 'error');
 
       return;
     }
 
-    // Validate prices
+    // ----------------------------------
+    // VALIDATE PRICES
+    // ----------------------------------
+
     if (
       cost === null ||
       !Number.isFinite(cost) ||
@@ -234,7 +342,24 @@ export class ProductList {
       return;
     }
 
-    // Check duplicate SKU
+    // ----------------------------------
+    // FIND REAL DATABASE CATEGORY
+    // ----------------------------------
+
+    const selectedCategory = this.backendCategories.find(
+      (category) => category.name === this.form.category && category.active,
+    );
+
+    if (!selectedCategory) {
+      this.showMessage('Please select a valid database category.', 'error');
+
+      return;
+    }
+
+    // ----------------------------------
+    // CHECK DUPLICATE SKU
+    // ----------------------------------
+
     const duplicateSku = this.products.some(
       (product) =>
         product.id !== this.editingProductId && product.sku.toLowerCase() === sku.toLowerCase(),
@@ -246,9 +371,12 @@ export class ProductList {
       return;
     }
 
-    // Check duplicate barcode
+    // ----------------------------------
+    // CHECK DUPLICATE BARCODE
+    // ----------------------------------
+
     const duplicateBarcode =
-      barcode &&
+      barcode !== '' &&
       this.products.some(
         (product) => product.id !== this.editingProductId && product.barcode === barcode,
       );
@@ -259,73 +387,135 @@ export class ProductList {
       return;
     }
 
-    // Determine whether registering or editing
-    const wasEditing = this.editingProductId !== null;
+    // ----------------------------------
+    // PREPARE BACKEND PRODUCT DATA
+    // ----------------------------------
 
-    const existing = this.products.find((product) => product.id === this.editingProductId);
+    const productData = {
+      sku: sku,
+      name: name,
+      barcode: barcode || null,
+      description: this.form.description.trim(),
+      costPrice: cost,
+      sellingPrice: selling,
+      active: this.form.active,
+      category: {
+        id: selectedCategory.id,
+      },
+    };
 
-    if (wasEditing && !existing) {
-      this.showMessage('The selected product could not be found.', 'error');
+    // ----------------------------------
+    // UPDATE EXISTING PRODUCT
+    // ----------------------------------
+
+    if (this.editingProductId !== null) {
+      const productId = this.editingProductId;
+
+      const existingProduct = this.products.find((product) => product.id === productId);
+
+      if (!existingProduct) {
+        this.showMessage('The selected product could not be found.', 'error');
+
+        return;
+      }
+
+      // Keep the original SKU when editing.
+      // The backend does not update SKU.
+
+      productData.sku = existingProduct.sku;
+
+      this.http.put<BackendProduct>(`${this.productApiUrl}/${productId}`, productData).subscribe({
+        next: (updatedProduct) => {
+          const convertedProduct = this.convertBackendProduct(updatedProduct);
+
+          this.products = this.products.map((product) =>
+            product.id === productId ? convertedProduct : product,
+          );
+
+          this.resetForm();
+
+          this.showMessage('Product updated successfully!', 'success');
+
+          this.cdr.detectChanges();
+        },
+
+        error: (error) => {
+          console.error('Error updating product:', error);
+
+          this.showMessage(
+            'Could not update product. Please check the details and try again.',
+            'error',
+          );
+
+          this.cdr.detectChanges();
+        },
+      });
 
       return;
     }
 
-    // Prepare product information
-    const updatedData = {
-      sku: sku,
-      name: name,
-      barcode: barcode,
-      category: this.form.category,
-      costPrice: cost,
-      sellingPrice: selling,
-      description: this.form.description.trim(),
-      active: this.form.active,
-      icon: this.iconForCategory(this.form.category),
-    };
+    // ----------------------------------
+    // CREATE NEW PRODUCT
+    // ----------------------------------
 
-    if (existing) {
-      // Update selected product
-      // SKU remains unchanged during editing.
-      Object.assign(existing, {
-        ...updatedData,
-        sku: existing.sku,
-      });
-    } else {
-      // Register a new product
-      this.products.unshift({
-        id: this.nextId++,
-        ...updatedData,
-      });
-    }
+    this.http.post<BackendProduct>(this.productApiUrl, productData).subscribe({
+      next: (savedProduct) => {
+        const convertedProduct = this.convertBackendProduct(savedProduct);
 
-    // Clear form after saving
-    this.resetForm();
+        this.products = [convertedProduct, ...this.products];
 
-    // Display success message
-    this.showMessage(
-      wasEditing ? 'Product updated successfully!' : 'Product registered successfully!',
-      'success',
-    );
+        this.resetForm();
+
+        this.showMessage('Product registered successfully!', 'success');
+
+        this.cdr.detectChanges();
+      },
+
+      error: (error) => {
+        console.error('Error saving product:', error);
+
+        this.showMessage(
+          'Could not save product. Check the backend or duplicate SKU/barcode.',
+          'error',
+        );
+
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   // ----------------------------------
-  // DELETE PRODUCT FROM DEMO LIST
+  // DELETE PRODUCT FROM DATABASE
   // ----------------------------------
 
   deleteProduct(product: Product): void {
-    const confirmed = window.confirm(`Delete ${product.name} from this demo list?`);
+    const confirmed = window.confirm(`Delete ${product.name} from the database?`);
 
     if (!confirmed) {
       return;
     }
 
-    this.products = this.products.filter((item) => item.id !== product.id);
+    this.http.delete<void>(`${this.productApiUrl}/${product.id}`).subscribe({
+      next: () => {
+        this.products = this.products.filter((item) => item.id !== product.id);
 
-    if (this.editingProductId === product.id) {
-      this.resetForm();
-    }
+        if (this.editingProductId === product.id) {
+          this.resetForm();
+        }
 
-    this.showMessage('Product removed from the demo list.', 'success');
+        this.showMessage('Product deleted successfully!', 'success');
+
+        this.cdr.detectChanges();
+      },
+
+      error: (error) => {
+        console.error('Error deleting product:', error);
+
+        this.showMessage('Could not delete product from the database.', 'error');
+
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   // ----------------------------------
@@ -358,11 +548,12 @@ export class ProductList {
   }
 
   // ----------------------------------
-  // DISPLAY MESSAGES
+  // DISPLAY SUCCESS OR ERROR MESSAGES
   // ----------------------------------
 
   private showMessage(text: string, type: 'success' | 'error'): void {
     this.message = text;
+
     this.messageType = type;
   }
 
@@ -374,9 +565,13 @@ export class ProductList {
     const icons: Record<string, string> = {
       Lighting: '💡',
       'Electrical Accessories': '🔌',
+      'Electrical Wires': '🔌',
+      'Electrical Switches': '🔌',
       'Power Tools': '🛠️',
       Hardware: '🔩',
       'Safety Equipment': '🧤',
+      'Spare Parts': '⚙️',
+      'Drilling Tools': '🛠️',
     };
 
     return icons[category] ?? '📦';

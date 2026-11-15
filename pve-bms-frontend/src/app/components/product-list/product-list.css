@@ -83,14 +83,16 @@ textarea {
   color: #1e293b;
   font-size: 14px;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 input:focus,
 select:focus,
 textarea:focus {
   border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 input:disabled {
@@ -160,12 +162,37 @@ button:disabled {
   background: #cbd5e1;
 }
 
+/* Product List header and filters */
 .table-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 15px;
-  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Keep the Product List title on its own row */
+.table-header > div:first-child {
+  grid-column: 1 / -1;
+}
+
+/* Make search and dropdowns fit their columns */
+.table-header > .search {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+/* Responsive layout for smaller screens */
+@media (max-width: 800px) {
+  .table-header {
+    grid-template-columns: 1fr;
+  }
+
+  .table-header > div:first-child {
+    grid-column: auto;
+  }
 }
 
 .search {
@@ -436,8 +463,12 @@ td {
 }
 
 @keyframes successOverlayIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes successPopupIn {

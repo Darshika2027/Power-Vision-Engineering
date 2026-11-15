@@ -1,5 +1,5 @@
-
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -10,22 +10,48 @@ import { ProductService } from '../../services/product';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './product-list.html',
-  styleUrl: './product-list.css'
+  styleUrl: './product-list.css',
 })
 export class ProductList implements OnInit, OnDestroy {
+  // ----------------------------------
+  // PRODUCT AND CATEGORY DATA
+  // ----------------------------------
 
   products: any[] = [];
   categories: any[] = [];
+
+  // ----------------------------------
+  // SEARCH AND FILTER VARIABLES
+  // ----------------------------------
+
   searchText = '';
+
+  selectedCategoryId = 0;
+
+  selectedStatus: 'all' | 'active' | 'inactive' = 'all';
+
+  // ----------------------------------
+  // EDITING VARIABLES
+  // ----------------------------------
+
   isEditing = false;
   editingId: number | null = null;
 
+  // ----------------------------------
+  // SUCCESS AND ERROR MESSAGES
+  // ----------------------------------
+
   errorMessage = '';
   successMessage = '';
+
   showSuccessPopup = false;
   successPopupMessage = '';
 
   private successPopupTimer: ReturnType<typeof setTimeout> | null = null;
+
+  // ----------------------------------
+  // PRODUCT FORM
+  // ----------------------------------
 
   product = {
     sku: '',
@@ -35,16 +61,28 @@ export class ProductList implements OnInit, OnDestroy {
     costPrice: 0,
     sellingPrice: 0,
     active: true,
-    categoryId: 0
+    categoryId: 0,
   };
 
+  // ----------------------------------
+  // CATEGORY API
+  // ----------------------------------
+
   private categoryUrl = 'http://localhost:8080/api/categories';
+
+  // ----------------------------------
+  // CONSTRUCTOR
+  // ----------------------------------
 
   constructor(
     private productService: ProductService,
     private http: HttpClient,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
+
+  // ----------------------------------
+  // INITIALIZE COMPONENT
+  // ----------------------------------
 
   ngOnInit(): void {
     this.loadProducts();
@@ -57,59 +95,100 @@ export class ProductList implements OnInit, OnDestroy {
     }
   }
 
+  // ----------------------------------
+  // PRODUCT STATISTICS
+  // ----------------------------------
+
   get totalProducts(): number {
     return this.products.length;
   }
 
   get activeProducts(): number {
-    return this.products.filter(p => p.active).length;
+    return this.products.filter((product) => product.active).length;
   }
 
   get inactiveProducts(): number {
-    return this.products.filter(p => !p.active).length;
+    return this.products.filter((product) => !product.active).length;
   }
+
+  // ----------------------------------
+  // LOAD PRODUCTS FROM BACKEND
+  // ----------------------------------
 
   loadProducts(): void {
     this.productService.getProducts().subscribe({
-      next: data => {
+      next: (data) => {
         this.products = data;
+        this.errorMessage = '';
         this.cdr.detectChanges();
       },
-      error: err => {
+
+      error: (err) => {
         console.error('PRODUCT LOAD ERROR:', err);
+
         this.errorMessage = 'Unable to load products.';
+
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
+  // ----------------------------------
+  // LOAD CATEGORIES FROM BACKEND
+  // ----------------------------------
+
   loadCategories(): void {
     this.http.get<any[]>(this.categoryUrl).subscribe({
-      next: data => {
+      next: (data) => {
         this.categories = data;
         this.cdr.detectChanges();
       },
-      error: () => {
+
+      error: (err) => {
+        console.error('CATEGORY LOAD ERROR:', err);
+
         this.errorMessage = 'Unable to load categories.';
+
         this.cdr.detectChanges();
-      }
+      },
     });
   }
+
+  // ----------------------------------
+  // SEARCH AND FILTER PRODUCTS
+  // ----------------------------------
 
   get filteredProducts(): any[] {
     const search = this.searchText.toLowerCase().trim();
 
-    return this.products.filter(p =>
-      p.name?.toLowerCase().includes(search) ||
-      p.sku?.toLowerCase().includes(search) ||
-      p.barcode?.toLowerCase().includes(search) ||
-      p.category?.name?.toLowerCase().includes(search)
-    );
+    return this.products.filter((product) => {
+      // Search by name, SKU, barcode or category
+      const matchesSearch =
+        !search ||
+        product.name?.toLowerCase().includes(search) ||
+        product.sku?.toLowerCase().includes(search) ||
+        product.barcode?.toLowerCase().includes(search) ||
+        product.category?.name?.toLowerCase().includes(search);
+
+      // Filter by category ID
+      const matchesCategory =
+        this.selectedCategoryId === 0 ||
+        Number(product.category?.id) === Number(this.selectedCategoryId);
+
+      // Filter by active/inactive status
+      const matchesStatus =
+        this.selectedStatus === 'all' ||
+        (this.selectedStatus === 'active' ? product.active === true : product.active === false);
+
+      return matchesSearch && matchesCategory && matchesStatus;
+    });
   }
 
-  showProductSuccess(message: string): void {
-    console.log('SUCCESS POPUP TRIGGERED:', message);
+  // ----------------------------------
+  // SUCCESS POPUP
+  // ----------------------------------
 
+  showProductSuccess(message: string): void {
     if (this.successPopupTimer !== null) {
       clearTimeout(this.successPopupTimer);
     }
@@ -119,66 +198,87 @@ export class ProductList implements OnInit, OnDestroy {
 
     this.cdr.detectChanges();
 
-    console.log('POPUP STATE:', this.showSuccessPopup);
-
     this.successPopupTimer = setTimeout(() => {
       this.showSuccessPopup = false;
       this.successPopupTimer = null;
+
       this.cdr.detectChanges();
     }, 1000);
   }
 
-  saveProduct(): void {
-    console.log('SAVE PRODUCT FUNCTION CALLED');
+  // ----------------------------------
+  // ADD OR UPDATE PRODUCT
+  // ----------------------------------
 
+  saveProduct(): void {
     this.errorMessage = '';
     this.successMessage = '';
 
+    // Validate required fields
     if (
       !this.product.sku.trim() ||
       !this.product.name.trim() ||
       !this.product.categoryId ||
-      this.product.costPrice <= 0 ||
-      this.product.sellingPrice <= 0
+      !Number.isFinite(Number(this.product.costPrice)) ||
+      !Number.isFinite(Number(this.product.sellingPrice)) ||
+      Number(this.product.costPrice) <= 0 ||
+      Number(this.product.sellingPrice) <= 0
     ) {
       this.errorMessage = 'Please fill all required fields correctly.';
-      console.log('PRODUCT VALIDATION FAILED');
+
       this.cdr.detectChanges();
       return;
     }
 
+    // Validate category from the database
+    const selectedCategory = this.categories.find(
+      (category) => Number(category.id) === Number(this.product.categoryId),
+    );
+
+    if (!selectedCategory) {
+      this.errorMessage = 'Please select a valid category.';
+
+      this.cdr.detectChanges();
+      return;
+    }
+
+    // Prepare request body
     const payload = {
       sku: this.product.sku.trim(),
       name: this.product.name.trim(),
       barcode: this.product.barcode.trim() || null,
-      description: this.product.description,
+      description: this.product.description.trim(),
       costPrice: Number(this.product.costPrice),
       sellingPrice: Number(this.product.sellingPrice),
       active: this.product.active,
-      category: { id: Number(this.product.categoryId) }
+      category: {
+        id: Number(this.product.categoryId),
+      },
     };
 
     const editing = this.isEditing;
 
-    const request = editing && this.editingId !== null
-      ? this.productService.updateProduct(this.editingId, payload)
-      : this.productService.addProduct(payload);
+    // Select Add or Update API
+    const request =
+      editing && this.editingId !== null
+        ? this.productService.updateProduct(this.editingId, payload)
+        : this.productService.addProduct(payload);
 
+    // Send request to Spring Boot
     request.subscribe({
       next: () => {
-        console.log('PRODUCT SAVE SUCCESS');
-
-        const message = editing
-          ? 'Product updated successfully!'
-          : 'Product added successfully!';
+        const message = editing ? 'Product updated successfully!' : 'Product added successfully!';
 
         this.resetForm();
+
         this.loadProducts();
 
         this.successMessage = message;
+
         this.showProductSuccess(message);
       },
-      error: err => {
+
+      error: (err) => {
         console.error('PRODUCT SAVE ERROR:', err);
 
         this.errorMessage =
@@ -188,23 +288,27 @@ export class ProductList implements OnInit, OnDestroy {
           'Unable to save product. Please check the details.';
 
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
-  editProduct(p: any): void {
+  // ----------------------------------
+  // EDIT PRODUCT
+  // ----------------------------------
+
+  editProduct(product: any): void {
     this.isEditing = true;
-    this.editingId = p.id;
+    this.editingId = product.id;
 
     this.product = {
-      sku: p.sku,
-      name: p.name,
-      barcode: p.barcode || '',
-      description: p.description || '',
-      costPrice: Number(p.costPrice),
-      sellingPrice: Number(p.sellingPrice),
-      active: p.active,
-      categoryId: p.category?.id || 0
+      sku: product.sku,
+      name: product.name,
+      barcode: product.barcode || '',
+      description: product.description || '',
+      costPrice: Number(product.costPrice),
+      sellingPrice: Number(product.sellingPrice),
+      active: product.active,
+      categoryId: product.category?.id || 0,
     };
 
     this.successMessage = '';
@@ -212,11 +316,20 @@ export class ProductList implements OnInit, OnDestroy {
 
     this.cdr.detectChanges();
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
   }
 
+  // ----------------------------------
+  // DELETE PRODUCT
+  // ----------------------------------
+
   deleteProduct(id: number): void {
-    if (!confirm('Are you sure you want to delete this product?')) {
+    const confirmed = window.confirm('Are you sure you want to delete this product?');
+
+    if (!confirmed) {
       return;
     }
 
@@ -228,20 +341,23 @@ export class ProductList implements OnInit, OnDestroy {
         this.loadProducts();
 
         this.successMessage = 'Product deleted successfully!';
+
         this.showProductSuccess(this.successMessage);
       },
-      error: err => {
+
+      error: (err) => {
         console.error('PRODUCT DELETE ERROR:', err);
 
-        this.errorMessage =
-          err.error?.detail ||
-          err.error?.message ||
-          'Unable to delete product.';
+        this.errorMessage = err.error?.detail || err.error?.message || 'Unable to delete product.';
 
         this.cdr.detectChanges();
-      }
+      },
     });
   }
+
+  // ----------------------------------
+  // RESET PRODUCT FORM
+  // ----------------------------------
 
   resetForm(): void {
     this.product = {
@@ -252,7 +368,7 @@ export class ProductList implements OnInit, OnDestroy {
       costPrice: 0,
       sellingPrice: 0,
       active: true,
-      categoryId: 0
+      categoryId: 0,
     };
 
     this.isEditing = false;

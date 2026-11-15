@@ -1,4 +1,3 @@
-
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -46,6 +45,10 @@ export class ProductBarcodeLookup {
   searchProduct(): void {
     const enteredBarcode = this.barcode.trim();
 
+    if (this.loading) {
+      return;
+    }
+
     this.product = null;
     this.successMessage = '';
     this.errorMessage = '';
@@ -57,16 +60,11 @@ export class ProductBarcodeLookup {
 
     this.loading = true;
 
-    this.http.get<Product[]>(this.apiUrl).subscribe({
-      next: (products) => {
+    const url = `${this.apiUrl}/barcode/${encodeURIComponent(enteredBarcode)}`;
 
-        const foundProduct = products.find(
-          item => item.barcode?.trim() === enteredBarcode
-        );
-
-        if (!foundProduct) {
-          this.errorMessage = 'No product found for this barcode.';
-        } else if (!foundProduct.active) {
+    this.http.get<Product>(url).subscribe({
+      next: (foundProduct) => {
+        if (!foundProduct.active) {
           this.errorMessage = 'This product is currently inactive.';
         } else {
           this.product = foundProduct;
@@ -79,8 +77,14 @@ export class ProductBarcodeLookup {
       error: (error) => {
         console.error('Barcode lookup error:', error);
 
-        this.errorMessage =
-          'Unable to connect to the server. Please try again.';
+        if (error.status === 404) {
+          this.errorMessage = 'No product found for this barcode.';
+        } else if (error.status === 400) {
+          this.errorMessage = 'Invalid barcode. Please check and try again.';
+        } else {
+          this.errorMessage =
+            'Unable to connect to the server. Please try again.';
+        }
 
         this.loading = false;
       }
@@ -104,9 +108,4 @@ export class ProductBarcodeLookup {
     });
   }
 
-  viewDetails(): void {
-    if (this.product) {
-      this.successMessage = 'Product details are displayed above.';
-    }
-  }
 }

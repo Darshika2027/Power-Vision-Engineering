@@ -31,6 +31,9 @@ public class Product {
 
     private boolean active = true;
 
+    @Column(nullable = false)
+    private int stockQuantity = 0;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToOne
@@ -102,6 +105,14 @@ public class Product {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public int getStockQuantity() {
+        return stockQuantity;
+    }
+
+    public void setStockQuantity(int stockQuantity) {
+        this.stockQuantity = stockQuantity;
     }
 
     public Category getCategory() {

@@ -84,6 +84,21 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    public Product getProductByBarcode(String barcode) {
+
+        if (barcode == null || barcode.trim().isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Please enter a barcode");
+        }
+
+        String cleanBarcode = barcode.trim();
+
+        return productRepository.findByBarcode(cleanBarcode)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "No product found with barcode: " + cleanBarcode));
+    }
     public void deleteProduct(Long id) {
         Product product = getProductById(id);
         productRepository.delete(product);

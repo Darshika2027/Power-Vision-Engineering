@@ -1,7 +1,9 @@
-﻿import { Routes } from '@angular/router';
+﻿
+import { Routes } from '@angular/router';
 import { CategoryList } from './components/category-list/category-list';
 import { ProductList } from './components/product-list/product-list';
 import { ProductBarcodeLookup } from './components/product-barcode-lookup/product-barcode-lookup';
+import { GoodsReceiving } from './components/goods-receiving/goods-receiving';
 
 export const routes: Routes = [
   {
@@ -15,5 +17,9 @@ export const routes: Routes = [
   {
     path: 'product-lookup',
     component: ProductBarcodeLookup
+  },
+  {
+    path: 'goods-receiving',
+    component: GoodsReceiving
   }
 ];

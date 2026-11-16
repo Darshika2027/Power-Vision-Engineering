@@ -1,6 +1,7 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { ProductService } from '../../services/product';
 
 interface ReceivingItem {
@@ -15,7 +16,7 @@ interface ReceivingItem {
 @Component({
   selector: 'app-goods-receiving',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive],
   templateUrl: './goods-receiving.html',
   styleUrl: './goods-receiving.css'
 })

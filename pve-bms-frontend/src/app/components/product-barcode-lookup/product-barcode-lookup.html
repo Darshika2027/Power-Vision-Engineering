@@ -3,38 +3,47 @@
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-logo">PVE</div>
-      <div>
-        <h2>PVE-BMS</h2>
-        <span>Business Management</span>
-      </div>
+  <div class="brand">
+    <div class="brand-logo">PVE</div>
+    <div>
+      <h2>PVE-BMS</h2>
+      <span>Business Management</span>
     </div>
+  </div>
 
-    <div class="nav-label">MAIN MENU</div>
+  <div class="nav-label">MAIN MENU</div>
 
-    <nav class="navigation">
-      <a class="nav-item"><span>&#9638;</span> Dashboard</a>
-      <a class="nav-item" routerLink="/products"><span>&#9633;</span> Products</a>
-      <a class="nav-item" routerLink="/"><span>&#9670;</span> Categories</a>
-      <a class="nav-item"><span>&#9671;</span> Subcategories</a>
-      <a class="nav-item"><span>&#9635;</span> Inventory</a>
-      <a class="nav-item"><span>&#9654;</span> Sales (POS)</a>
-      <a class="nav-item"><span>&#9823;</span> Suppliers</a>
-      <a class="nav-item"><span>&#9874;</span> Repairs</a>
-      <a class="nav-item"><span>&#9632;</span> Reports</a>
-      <a class="nav-item"><span>&#9881;</span> Settings</a>
-    </nav>
+  <nav class="navigation">
+    <a class="nav-item" routerLink="/products">
+      <span>&#9638;</span> Products
+    </a>
 
-    <div class="sidebar-bottom">
-      <div class="sidebar-message">
-        <div class="message-icon">&#10022;</div>
-        <h3>Build Better.</h3>
-        <p>Manage Smarter.</p>
-      </div>
-      <span class="version">PVE-BMS | Frontend Demo</span>
+    <a class="nav-item" routerLink="/" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="active">
+      <span>&#9633;</span> Categories
+    </a>
+
+    <a class="nav-item" routerLink="/product-lookup" routerLinkActive="active">
+      <span>&#9635;</span> Barcode Lookup
+    </a>
+
+    <a class="nav-item" routerLink="/goods-receiving" routerLinkActive="active">
+      <span>&#9634;</span> Goods Receiving
+    </a>
+
+    <a class="nav-item" routerLink="/rack-stock-management" routerLinkActive="active">
+      <span>&#9636;</span> Rack &amp; Stock
+    </a>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <div class="sidebar-message">
+      <span class="message-icon">&#10022;</span>
+      <h3>Build Better.</h3>
+      <p>Manage Smarter.</p>
     </div>
-  </aside>
+    <span class="version">PVE-BMS | Frontend Demo</span>
+  </div>
+</aside>
 
   <!-- MAIN CONTENT -->
   <main class="main-content">

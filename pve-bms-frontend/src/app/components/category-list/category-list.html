@@ -3,71 +3,47 @@
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-logo">PVE</div>
-      <div>
-        <h2>PVE-BMS</h2>
-        <span>Business Management</span>
-      </div>
+  <div class="brand">
+    <div class="brand-logo">PVE</div>
+    <div>
+      <h2>PVE-BMS</h2>
+      <span>Business Management</span>
     </div>
+  </div>
 
-    <div class="nav-label">MAIN MENU</div>
+  <div class="nav-label">MAIN MENU</div>
 
-    <nav class="navigation">
-      <a class="nav-item">
-        <span>⌂</span> Dashboard
-      </a>
+  <nav class="navigation">
+    <a class="nav-item" routerLink="/products">
+      <span>&#9638;</span> Products
+    </a>
 
-      <a class="nav-item" routerLink="/products">
-        <span>▣</span> Products
-      </a>
+    <a class="nav-item" routerLink="/" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="active">
+      <span>&#9633;</span> Categories
+    </a>
 
-      <a class="nav-item" routerLink="/">
-        <span>▦</span> Categories
-      </a>
+    <a class="nav-item" routerLink="/product-lookup" routerLinkActive="active">
+      <span>&#9635;</span> Barcode Lookup
+    </a>
 
-      <a class="nav-item" routerLink="/product-lookup">
-        <span>▥</span> Barcode Lookup
-      </a>
+    <a class="nav-item" routerLink="/goods-receiving" routerLinkActive="active">
+      <span>&#9634;</span> Goods Receiving
+    </a>
 
-      <a class="nav-item">
-        <span>▤</span> Subcategories
-      </a>
+    <a class="nav-item" routerLink="/rack-stock-management" routerLinkActive="active">
+      <span>&#9636;</span> Rack &amp; Stock
+    </a>
+  </nav>
 
-      <a class="nav-item">
-        <span>▣</span> Inventory
-      </a>
-
-      <a class="nav-item">
-        <span>🛒</span> Sales (POS)
-      </a>
-
-      <a class="nav-item">
-        <span>♧</span> Suppliers
-      </a>
-
-      <a class="nav-item">
-        <span>⚒</span> Repairs
-      </a>
-
-      <a class="nav-item">
-        <span>▥</span> Reports
-      </a>
-
-      <a class="nav-item">
-        <span>⚙</span> Settings
-      </a>
-    </nav>
-
-    <div class="sidebar-bottom">
-      <div class="sidebar-message">
-        <span class="message-icon">✦</span>
-        <h3>Build Better.</h3>
-        <p>Manage Smarter.</p>
-      </div>
-      <span class="version">PVE-BMS · Frontend Demo</span>
+  <div class="sidebar-bottom">
+    <div class="sidebar-message">
+      <span class="message-icon">&#10022;</span>
+      <h3>Build Better.</h3>
+      <p>Manage Smarter.</p>
     </div>
-  </aside>
+    <span class="version">PVE-BMS | Frontend Demo</span>
+  </div>
+</aside>
 
   <!-- MAIN CONTENT -->
   <main class="main-content">

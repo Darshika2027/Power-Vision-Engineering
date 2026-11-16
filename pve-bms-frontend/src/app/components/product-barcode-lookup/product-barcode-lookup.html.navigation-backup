@@ -1,0 +1,250 @@
+
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">PVE</div>
+      <div>
+        <h2>PVE-BMS</h2>
+        <span>Business Management</span>
+      </div>
+    </div>
+
+    <div class="nav-label">MAIN MENU</div>
+
+    <nav class="navigation">
+      <a class="nav-item"><span>&#9638;</span> Dashboard</a>
+      <a class="nav-item" routerLink="/products"><span>&#9633;</span> Products</a>
+      <a class="nav-item" routerLink="/"><span>&#9670;</span> Categories</a>
+      <a class="nav-item"><span>&#9671;</span> Subcategories</a>
+      <a class="nav-item"><span>&#9635;</span> Inventory</a>
+      <a class="nav-item"><span>&#9654;</span> Sales (POS)</a>
+      <a class="nav-item"><span>&#9823;</span> Suppliers</a>
+      <a class="nav-item"><span>&#9874;</span> Repairs</a>
+      <a class="nav-item"><span>&#9632;</span> Reports</a>
+      <a class="nav-item"><span>&#9881;</span> Settings</a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="sidebar-message">
+        <div class="message-icon">&#10022;</div>
+        <h3>Build Better.</h3>
+        <p>Manage Smarter.</p>
+      </div>
+      <span class="version">PVE-BMS | Frontend Demo</span>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div>
+        <span class="breadcrumb">Products /</span>
+        <strong>Barcode Lookup</strong>
+      </div>
+
+      <div class="topbar-right">
+        <div class="system-status">
+          <span class="online-dot"></span>
+          System Online
+        </div>
+
+        <button type="button" class="notification-btn" aria-label="Notifications">
+          ♧
+        </button>
+
+        <div class="profile">
+          <div class="avatar">SA</div>
+          <div>
+            <strong>System Admin</strong>
+            <span>Administrator</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-content">
+        <span class="hero-tag">PRODUCT MANAGEMENT</span>
+        <h1>Product <span>Barcode Lookup</span></h1>
+        <p>Find product information quickly and accurately using barcode scanning.</p>
+        <div class="hero-line"></div>
+      </div>
+
+      <div class="hero-decoration">
+        <div class="orbit orbit-one"></div>
+        <div class="orbit orbit-two"></div>
+        <div class="hero-box">▥</div>
+        <span class="hero-small">⌕</span>
+      </div>
+    </section>
+
+    <!-- SEARCH WORKSPACE -->
+    <section class="workspace">
+
+      <div class="workspace-header">
+        <div>
+          <span class="section-kicker">BARCODE SEARCH</span>
+          <h2>Find Your Product</h2>
+          <p>Scan a barcode or enter the barcode number manually.</p>
+        </div>
+
+        <div class="scanner-status">
+          <span class="scanner-dot"></span>
+          Scanner Ready
+        </div>
+      </div>
+
+      <form class="search-form" (ngSubmit)="searchProduct()">
+
+        <label for="barcodeInput">Product Barcode</label>
+
+        <div class="barcode-input-wrapper">
+          <span class="input-icon">▥</span>
+
+          <input
+            #barcodeInput
+            id="barcodeInput"
+            type="text"
+            name="barcode"
+            [(ngModel)]="barcode"
+            placeholder="Scan or enter product barcode..."
+            autocomplete="off"
+            autofocus
+          />
+
+          <span class="input-hint">ENTER BARCODE</span>
+        </div>
+
+        <div class="search-actions">
+          <button type="submit" class="search-btn" [disabled]="loading">
+            <span>⌕</span>
+            {{ loading ? 'Searching...' : 'Search Product' }}
+          </button>
+
+          <button type="button" class="clear-btn" (click)="clearSearch()">
+            ↻ Clear
+          </button>
+        </div>
+      </form>
+
+      <!-- LOADING -->
+      <div class="loading-message" *ngIf="loading">
+        <span class="spinner"></span>
+        Searching product information...
+      </div>
+
+      <!-- SUCCESS -->
+      <div class="success-message" *ngIf="successMessage">
+        <span>✓</span>
+        {{ successMessage }}
+      </div>
+
+      <!-- ERROR -->
+      <div class="error-message" *ngIf="errorMessage">
+        <span>!</span>
+        {{ errorMessage }}
+      </div>
+
+    </section>
+
+    <!-- PRODUCT RESULT -->
+    <section class="product-result" *ngIf="product as p">
+
+      <div class="result-heading">
+        <div>
+          <span class="section-kicker">SEARCH RESULT</span>
+          <h2>Product Information</h2>
+          <p>Product details retrieved from your inventory.</p>
+        </div>
+
+        <span class="status-badge" [class.inactive]="!p.active">
+          <span class="status-dot"></span>
+          {{ p.active ? 'Active Product' : 'Inactive Product' }}
+        </span>
+      </div>
+
+      <div class="product-details-card">
+
+        <div class="product-visual">
+          <div class="product-placeholder">▣</div>
+          <span>PRODUCT</span>
+          <small>Product Information</small>
+        </div>
+
+        <div class="product-info">
+
+          <span class="product-label">PRODUCT NAME</span>
+          <h2>{{ p.name }}</h2>
+
+          <div class="info-grid">
+
+            <div class="info-item">
+              <span>SKU</span>
+              <strong>{{ p.sku }}</strong>
+            </div>
+
+            <div class="info-item">
+              <span>BARCODE</span>
+              <strong>{{ p.barcode }}</strong>
+            </div>
+
+            <div class="info-item">
+              <span>CATEGORY</span>
+              <strong>{{ p.category?.name || 'Not assigned' }}</strong>
+            </div>
+
+          </div>
+
+          <div class="description">
+            <span>PRODUCT DESCRIPTION</span>
+            <p>{{ p.description || 'No description available.' }}</p>
+          </div>
+
+        </div>
+
+        <div class="pricing-panel">
+          <span class="pricing-heading">PRICE INFORMATION</span>
+
+          <div class="price-item selling">
+            <span>Selling Price</span>
+            <strong>Rs. {{ formatPrice(p.sellingPrice) }}</strong>
+          </div>
+
+          <div class="price-note">
+            <span>✓</span>
+            Current assigned selling price
+          </div>
+        </div>
+
+      </div>
+
+      <div class="result-actions">
+        <button type="button" class="details-btn" (click)="clearSearch()">
+          Search Another Product
+          <span>→</span>
+        </button>
+      </div>
+
+    </section>
+
+    <!-- EMPTY STATE -->
+    <section class="empty-state" *ngIf="!product && !loading">
+      <div class="empty-icon">▥</div>
+      <h3>Ready to Find a Product?</h3>
+      <p>Scan a barcode or enter the barcode number above to view product information.</p>
+      <span class="empty-hint">YOUR PRODUCT DETAILS WILL APPEAR HERE</span>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="page-footer">
+      <span>POWER VISION ENGINEERING</span>
+      <span>Product Inventory Management System</span>
+    </footer>
+
+  </main>
+</div>

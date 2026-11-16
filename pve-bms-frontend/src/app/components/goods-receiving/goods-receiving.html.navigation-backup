@@ -1,0 +1,346 @@
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">PVE</div>
+      <div>
+        <h2>PVE-BMS</h2>
+        <span>Business Management</span>
+      </div>
+    </div>
+
+    <div class="nav-label">MAIN MENU</div>
+
+    <nav class="navigation">
+      <a class="nav-item">
+        <span>⌂</span> Dashboard
+      </a>
+
+      <a class="nav-item" href="/products">
+        <span>▣</span> Products
+      </a>
+
+      <a class="nav-item" href="/">
+        <span>▦</span> Categories
+      </a>
+
+      <a class="nav-item" href="/product-lookup">
+        <span>▥</span> Barcode Lookup
+      </a>
+
+      <a class="nav-item">
+        <span>▤</span> Subcategories
+      </a>
+
+      <a class="nav-item">
+        <span>▣</span> Inventory
+      </a>
+
+      <a class="nav-item">
+        <span>🛒</span> Sales (POS)
+      </a>
+
+      <a class="nav-item">
+        <span>♧</span> Suppliers
+      </a>
+
+      <a class="nav-item">
+        <span>⚒</span> Repairs
+      </a>
+
+      <a class="nav-item">
+        <span>▥</span> Reports
+      </a>
+
+      <a class="nav-item">
+        <span>⚙</span> Settings
+      </a>
+          <a class="nav-item active" href="/goods-receiving">
+        <span>📦</span> Goods Receiving
+      </a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="sidebar-message">
+        <span class="message-icon">✦</span>
+        <h3>Build Better.</h3>
+        <p>Manage Smarter.</p>
+      </div>
+      <span class="version">PVE-BMS · Frontend Demo</span>
+    </div>
+  </aside>
+
+  <main class="main-content"><!-- PAGE TOP BAR -->
+<header class="topbar">
+  <div>
+    <span class="breadcrumb">Business Management /</span>
+    <strong>Goods Receiving</strong>
+  </div>
+
+  <div class="topbar-right">
+    <div class="system-status">
+      <span class="online-dot"></span>
+      System Online
+    </div>
+    <div class="profile">
+      <div class="avatar">A</div>
+      <div>
+        <strong>Administrator</strong>
+        <span>System Admin</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- HERO SECTION -->
+<section class="hero">
+  <div class="hero-content">
+    <span class="hero-tag">INVENTORY MANAGEMENT</span>
+    <h1>Goods <span>Receiving</span></h1>
+    <p>Record incoming products, verify quantities and organize stock into the correct rack locations.</p>
+    <div class="hero-line"></div>
+  </div>
+  <div class="hero-decoration">
+    <div class="hero-orbit orbit-one"></div>
+    <div class="hero-orbit orbit-two"></div>
+    <div class="hero-box">&#9638;</div>
+    <div class="hero-small">&#10022;</div>
+  </div>
+</section>
+
+<!-- STATISTICS -->
+<section class="stats-grid">
+  <div class="stat-card stat-blue">
+    <div class="stat-icon">&#9638;</div>
+    <div class="stat-info">
+      <span>Total Receivings</span>
+      <h2>{{ totalReceivings }}</h2>
+      <small>Recorded receiving entries</small>
+    </div>
+  </div>
+
+  <div class="stat-card stat-green">
+    <div class="stat-icon">&#10003;</div>
+    <div class="stat-info">
+      <span>Received Today</span>
+      <h2>{{ receivedToday }}</h2>
+      <small>Today's receiving entries</small>
+    </div>
+  </div>
+
+  <div class="stat-card stat-orange">
+    <div class="stat-icon">&#9639;</div>
+    <div class="stat-info">
+      <span>Total Units</span>
+      <h2>{{ totalUnitsReceived }}</h2>
+      <small>Units received</small>
+    </div>
+  </div>
+</section>
+
+<!-- RECEIVING WORKSPACE -->
+<section class="workspace">
+  <div class="workspace-header">
+    <div>
+      <span class="section-kicker">INVENTORY OPERATIONS</span>
+      <h2>New Goods Receiving</h2>
+      <p>Enter supplier and product details to record incoming goods.</p>
+    </div>
+    <span class="receiving-status">
+      <span></span>
+      New Entry
+    </span>
+  </div>
+
+  <!-- SUPPLIER DETAILS -->
+  <div class="form-section">
+    <div class="section-heading">
+      <div class="heading-icon">01</div>
+      <div>
+        <h3>Supplier Information</h3>
+        <p>Enter the supplier and delivery reference details.</p>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Supplier Name <span>*</span></label>
+        <input type="text" [(ngModel)]="supplierName" placeholder="Enter supplier name">
+      </div>
+
+      <div class="form-group">
+        <label>Supplier Invoice / Reference Number</label>
+        <input type="text" [(ngModel)]="supplierInvoice" placeholder="Enter invoice number">
+      </div>
+
+      <div class="form-group">
+        <label>Receiving Date <span>*</span></label>
+        <input type="date" [(ngModel)]="receivedDate">
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUCT DETAILS -->
+  <div class="form-section">
+    <div class="section-heading">
+      <div class="heading-icon">02</div>
+      <div>
+        <h3>Received Products</h3>
+        <p>Select existing products and enter the received quantities and rack locations.</p>
+      </div>
+    </div>
+
+    <div class="message error-message" *ngIf="productLoadError">
+      <span>!</span>
+      {{ productLoadError }}
+    </div>
+
+    <div class="table-wrapper">
+      <table class="receiving-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Product <span>*</span></th>
+            <th>SKU</th>
+            <th>Quantity <span>*</span></th>
+            <th>Unit Cost (Rs.) <span>*</span></th>
+            <th>Rack Number <span>*</span></th>
+            <th>Subtotal (Rs.)</th>
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let item of items; let i = index">
+            <td class="row-number">{{ i + 1 }}</td>
+
+            <td>
+              <select
+                [(ngModel)]="item.productId"
+                (ngModelChange)="onProductSelected(item)"
+                [disabled]="isLoadingProducts || products.length === 0">
+                <option [ngValue]="null">
+                  {{ isLoadingProducts ? 'Loading products...' : 'Select product' }}
+                </option>
+                <option *ngFor="let product of products" [ngValue]="product.id">
+                  {{ product.name }}
+                </option>
+              </select>
+            </td>
+
+            <td>
+              <input type="text" [value]="item.sku" placeholder="Auto-filled" readonly>
+            </td>
+
+            <td>
+              <input type="number" min="1" step="1" [(ngModel)]="item.quantity" placeholder="0">
+            </td>
+
+            <td>
+              <input type="number" min="0" step="0.01" [(ngModel)]="item.unitCost" placeholder="0.00">
+            </td>
+
+            <td>
+              <input type="text" [(ngModel)]="item.rackNumber" placeholder="e.g. R-01">
+            </td>
+
+            <td class="subtotal">
+              {{ ((item.quantity || 0) * (item.unitCost || 0)) | number:'1.2-2' }}
+            </td>
+
+            <td>
+              <button
+                type="button"
+                class="remove-button"
+                (click)="removeItem(i)"
+                [disabled]="items.length === 1"
+                title="Remove product">
+                &#10005;
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="demo-notice" *ngIf="!isLoadingProducts && !productLoadError && products.length === 0">
+      No active products found. Add products in Product Management first.
+    </p>
+
+    <button type="button" class="add-item-button" (click)="addItem()">
+      <span>+</span>
+      Add Another Product
+    </button>
+  </div>
+
+  <!-- NOTES -->
+  <div class="form-section">
+    <div class="section-heading">
+      <div class="heading-icon">03</div>
+      <div>
+        <h3>Additional Information</h3>
+        <p>Add optional notes about this delivery.</p>
+      </div>
+    </div>
+
+    <div class="form-group notes-group">
+      <label>Receiving Notes</label>
+      <textarea [(ngModel)]="notes" rows="3" placeholder="Enter any additional receiving notes..."></textarea>
+    </div>
+  </div>
+
+  <!-- RECEIVING SUMMARY -->
+  <div class="summary-section">
+    <div>
+      <span class="section-kicker">RECEIVING SUMMARY</span>
+      <h3>Delivery Overview</h3>
+      <p>Review the quantities and purchase cost before proceeding.</p>
+    </div>
+
+    <div class="summary-details">
+      <div class="summary-item">
+        <span>Total Product Lines</span>
+        <strong>{{ items.length }}</strong>
+      </div>
+      <div class="summary-item">
+        <span>Total Quantity</span>
+        <strong>{{ totalQuantity }}</strong>
+      </div>
+      <div class="summary-item summary-total">
+        <span>Total Purchase Cost</span>
+        <strong>Rs. {{ totalCost | number:'1.2-2' }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="message error-message" *ngIf="errorMessage">
+    <span>!</span>
+    {{ errorMessage }}
+  </div>
+
+  <div class="message success-message" *ngIf="successMessage">
+    <span>&#10003;</span>
+    {{ successMessage }}
+  </div>
+
+  <!-- ACTION BUTTONS -->
+  <div class="form-actions">
+    <button type="button" class="secondary-button" (click)="resetForm()">
+      Reset Form
+    </button>
+
+    <button type="button" class="primary-button" (click)="onReviewReceiving()">
+      Review Receiving Details
+      <span>&#8594;</span>
+    </button>
+  </div>
+
+  <p class="demo-notice">
+    UI Preview: This page currently validates the entered details only.
+    No database records or stock quantities are changed.
+  </p>
+</section>
+
+  </main>
+</div>
+

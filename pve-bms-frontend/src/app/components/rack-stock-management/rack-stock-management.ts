@@ -1,17 +1,22 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+﻿import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
-interface RackItem {
+import { ProductService } from '../../services/product';
+import {
+  RackInventoryService,
+  RackInventory,
+  RackRequest,
+  RackSummary
+} from '../../services/rack-inventory.service';
+
+interface ProductOption {
   id: number;
-  rackNumber: string;
-  productName: string;
+  name: string;
   sku: string;
   category: string;
-  quantity: number;
-  location: string;
-  updatedAt: string;
+  active: boolean;
 }
 
 @Component({
@@ -21,67 +26,98 @@ interface RackItem {
   templateUrl: './rack-stock-management.html',
   styleUrl: './rack-stock-management.css'
 })
-export class RackStockManagement {
+export class RackStockManagement implements OnInit {
+
   searchText = '';
   selectedLocation = 'All Locations';
+
   showModal = false;
   editingId: number | null = null;
 
-  locations = ['All Locations', 'Main Store', 'Front Store', 'Back Store'];
+  loading = false;
+  saving = false;
+  deletingId: number | null = null;
 
-  rackItems: RackItem[] = [
-    { id: 1, rackNumber: 'RACK-A01', productName: 'Electrical Wire 2.5mm', sku: 'PVE-001', category: 'Electrical Accessories', quantity: 120, location: 'Main Store', updatedAt: '2026-11-15' },
-    { id: 2, rackNumber: 'RACK-A02', productName: 'LED Bulb 12W', sku: 'PVE-002', category: 'Lighting', quantity: 8, location: 'Main Store', updatedAt: '2026-11-15' },
-    { id: 3, rackNumber: 'RACK-B01', productName: 'Power Extension 5m', sku: 'PVE-003', category: 'Electrical Accessories', quantity: 0, location: 'Front Store', updatedAt: '2026-11-14' },
-    { id: 4, rackNumber: 'RACK-C01', productName: 'Circuit Breaker 32A', sku: 'PVE-004', category: 'Protection Devices', quantity: 45, location: 'Back Store', updatedAt: '2026-11-14' }
+  errorMessage = '';
+  successMessage = '';
+
+  locations = [
+    'All Locations',
+    'Main Store',
+    'Front Store',
+    'Back Store'
   ];
 
-  form: RackItem = this.emptyForm();
+  rackItems: RackInventory[] = [];
+  products: ProductOption[] = [];
 
-  emptyForm(): RackItem {
+  summary: RackSummary = {
+    totalRacks: 0,
+    totalProducts: 0,
+    totalStock: 0,
+    lowStock: 0,
+    mainStoreEntries: 0,
+    frontStoreEntries: 0,
+    backStoreEntries: 0
+  };
+
+  form = this.emptyForm();
+
+  constructor(
+    private rackService: RackInventoryService,
+    private productService: ProductService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadProducts();
+    this.loadRackData();
+  }
+
+  emptyForm() {
     return {
-      id: 0, rackNumber: '', productName: '', sku: '',
-      category: '', quantity: 0, location: 'Main Store',
-      updatedAt: new Date().toISOString().slice(0, 10)
+      productId: null as number | null,
+      rackNumber: '',
+      quantity: 0,
+      location: 'Main Store'
     };
   }
 
   get totalRacks(): number {
-    return new Set(this.rackItems.map(item => item.rackNumber)).size;
+    return this.summary.totalRacks;
   }
 
   get totalProducts(): number {
-    return this.rackItems.length;
+    return this.summary.totalProducts;
   }
 
   get totalStock(): number {
-    return this.rackItems.reduce((sum, item) => sum + item.quantity, 0);
+    return this.summary.totalStock;
   }
 
   get lowStock(): number {
-    return this.rackItems.filter(item => item.quantity > 0 && item.quantity <= 10).length;
+    return this.summary.lowStock;
   }
 
   get mainStoreEntries(): number {
-    return this.rackItems.filter(item => item.location === 'Main Store').length;
+    return this.summary.mainStoreEntries;
   }
 
   get frontStoreEntries(): number {
-    return this.rackItems.filter(item => item.location === 'Front Store').length;
+    return this.summary.frontStoreEntries;
   }
 
   get backStoreEntries(): number {
-    return this.rackItems.filter(item => item.location === 'Back Store').length;
+    return this.summary.backStoreEntries;
   }
 
-  get filteredItems(): RackItem[] {
-    const search = this.searchText.toLowerCase().trim();
+  get filteredItems(): RackInventory[] {
+    const search = this.searchText.trim().toLowerCase();
 
     return this.rackItems.filter(item => {
       const matchesSearch =
+        item.rackNumber.toLowerCase().includes(search) ||
         item.productName.toLowerCase().includes(search) ||
-        item.sku.toLowerCase().includes(search) ||
-        item.rackNumber.toLowerCase().includes(search);
+        item.sku.toLowerCase().includes(search);
 
       const matchesLocation =
         this.selectedLocation === 'All Locations' ||
@@ -89,6 +125,87 @@ export class RackStockManagement {
 
       return matchesSearch && matchesLocation;
     });
+  }
+
+  get selectedProductCategory(): string {
+    const selectedProduct = this.products.find(
+      product => product.id === this.form.productId
+    );
+
+    return selectedProduct?.category || 'No category';
+  }
+  get availableProducts(): ProductOption[] {
+    return this.products.filter(product =>
+      product.active ||
+      product.id === this.form.productId
+    );
+  }
+
+  loadProducts(): void {
+    this.productService.getProducts().subscribe({
+      next: (data: any[]) => {
+        this.products = (data || []).map(product => ({
+          id: Number(product.id),
+          name: product.name || '',
+          sku: product.sku || '',
+          category:
+            product.category?.name ||
+            product.categoryName ||
+            '',
+          active: product.active !== false
+        }));
+      },
+      error: () => {
+        this.errorMessage =
+          'Unable to load products. Please check the Product API.';
+      }
+    });
+  }
+
+  loadRackData(): void {
+    this.loading = true;
+    this.errorMessage = '';
+
+    this.rackService.getAll().subscribe({
+      next: data => {
+        this.rackItems = data || [];
+        this.loading = false;
+        this.loadSummary();
+      },
+      error: error => {
+        this.loading = false;
+        this.errorMessage = this.getErrorMessage(
+          error,
+          'Unable to load rack inventory.'
+        );
+      }
+    });
+  }
+
+  loadSummary(): void {
+    this.rackService.getSummary().subscribe({
+      next: data => {
+        this.summary = data;
+      },
+      error: error => {
+        this.errorMessage = this.getErrorMessage(
+          error,
+          'Unable to load rack stock summary.'
+        );
+      }
+    });
+  }
+
+  refreshData(): void {
+    this.loadRackData();
+  }
+
+  onSearchChange(): void {
+    // Search is performed locally on the currently loaded records.
+  }
+
+  onLocationChange(): void {
+    // Location filtering is performed locally on the currently loaded records.
   }
 
   getStockStatus(quantity: number): string {
@@ -100,64 +217,143 @@ export class RackStockManagement {
   openAddModal(): void {
     this.editingId = null;
     this.form = this.emptyForm();
+    this.errorMessage = '';
     this.showModal = true;
   }
 
-  openEditModal(item: RackItem): void {
+  openEditModal(item: RackInventory): void {
+    const product = this.products.find(
+      existing => existing.sku === item.sku
+    );
+
+    if (!product) {
+      this.errorMessage =
+        'The product linked to this rack could not be found.';
+      return;
+    }
+
     this.editingId = item.id;
-    this.form = { ...item };
+
+    this.form = {
+      productId: product.id,
+      rackNumber: item.rackNumber,
+      quantity: item.quantity,
+      location: item.location
+    };
+
+    this.errorMessage = '';
     this.showModal = true;
   }
 
   closeModal(): void {
+    if (this.saving) return;
+
     this.showModal = false;
     this.editingId = null;
+    this.form = this.emptyForm();
   }
 
   saveRack(): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+
     if (
+      this.form.productId === null ||
       !this.form.rackNumber.trim() ||
-      !this.form.productName.trim() ||
-      !this.form.sku.trim() ||
-      this.form.quantity < 0
+      !this.form.location ||
+      !Number.isInteger(Number(this.form.quantity)) ||
+      Number(this.form.quantity) < 0
     ) {
-      alert('Please complete all required fields.');
+      this.errorMessage =
+        'Please complete all required fields with valid values.';
       return;
     }
 
-    const duplicate = this.rackItems.some(item =>
-      item.rackNumber.toLowerCase() === this.form.rackNumber.toLowerCase() &&
-      item.sku.toLowerCase() === this.form.sku.toLowerCase() &&
-      item.id !== this.editingId
+    const selectedProduct = this.products.find(
+      product => product.id === this.form.productId
     );
 
-    if (duplicate) {
-      alert('This product is already assigned to this rack.');
+    if (!selectedProduct) {
+      this.errorMessage = 'Please select a valid product.';
       return;
     }
 
-    if (this.editingId !== null) {
-      const index = this.rackItems.findIndex(item => item.id === this.editingId);
-      if (index !== -1) {
-        this.rackItems[index] = {
-          ...this.form,
-          id: this.editingId,
-          updatedAt: new Date().toISOString().slice(0, 10)
-        };
+    const request: RackRequest = {
+      productId: Number(this.form.productId),
+      rackNumber: this.form.rackNumber.trim(),
+      quantity: Number(this.form.quantity),
+      location: this.form.location
+    };
+
+    this.saving = true;
+
+    const operation = this.editingId !== null
+      ? this.rackService.update(this.editingId, request)
+      : this.rackService.create(request);
+
+    operation.subscribe({
+      next: () => {
+        this.saving = false;
+        this.showModal = false;
+        const wasEditing = this.editingId !== null;
+
+        this.successMessage = wasEditing
+          ? 'Rack location updated successfully!'
+          : 'Rack location added successfully!';
+
+        this.editingId = null;
+        this.form = this.emptyForm();
+
+        this.loadRackData();
+      },
+      error: error => {
+        this.saving = false;
+        this.errorMessage = this.getErrorMessage(
+          error,
+          'Unable to save rack location.'
+        );
       }
-    } else {
-      this.rackItems.push({
-        ...this.form,
-        id: Math.max(0, ...this.rackItems.map(item => item.id)) + 1,
-        updatedAt: new Date().toISOString().slice(0, 10)
-      });
+    });
+  }
+
+  deleteRackItem(item: RackInventory): void {
+    if (
+      !confirm(
+        `Remove ${item.productName} from ${item.rackNumber}?`
+      )
+    ) {
+      return;
     }
 
-    this.closeModal();
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.deletingId = item.id;
+
+    this.rackService.delete(item.id).subscribe({
+      next: () => {
+        this.deletingId = null;
+        this.successMessage = 'Rack location deleted successfully.';
+        this.loadRackData();
+      },
+      error: error => {
+        this.deletingId = null;
+        this.errorMessage = this.getErrorMessage(
+          error,
+          'Unable to delete rack location.'
+        );
+      }
+    });
   }
 
-  deleteRackItem(item: RackItem): void {
-    if (!confirm(`Remove ${item.productName} from ${item.rackNumber}?`)) return;
-    this.rackItems = this.rackItems.filter(rack => rack.id !== item.id);
+  private getErrorMessage(error: any, fallback: string): string {
+    const message =
+      error?.error?.detail ||
+      error?.error?.message ||
+      error?.error?.title ||
+      error?.message;
+
+    return message || fallback;
   }
 }
+
+

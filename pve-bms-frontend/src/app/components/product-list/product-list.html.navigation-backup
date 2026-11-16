@@ -1,0 +1,222 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Product Management</h1>
+      <p>Manage your products, prices and categories</p>
+    </div>
+    <div class="total">Product Management</div>
+  </div>
+
+  <p style="color: red; font-weight: bold">Popup State: {{ showSuccessPopup }}</p>
+
+  <div class="message error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-label">Total Products</span>
+      <h2>{{ totalProducts }}</h2>
+      <span class="stat-note">All registered products</span>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-label">Active Products</span>
+      <h2 class="green">{{ activeProducts }}</h2>
+      <span class="stat-note">Currently active</span>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-label">Inactive Products</span>
+      <h2 class="red">{{ inactiveProducts }}</h2>
+      <span class="stat-note">Currently inactive</span>
+    </div>
+  </div>
+
+  <section class="form-card">
+    <h2>{{ isEditing ? 'Edit Product' : 'Add New Product' }}</h2>
+
+    <form (ngSubmit)="saveProduct()" #productForm="ngForm">
+      <div class="form-grid">
+        <div class="field">
+          <label>SKU *</label>
+          <input
+            name="sku"
+            [(ngModel)]="product.sku"
+            placeholder="Enter SKU"
+            required
+            [disabled]="isEditing"
+          />
+        </div>
+
+        <div class="field">
+          <label>Product Name *</label>
+          <input name="name" [(ngModel)]="product.name" placeholder="Enter product name" required />
+        </div>
+
+        <div class="field">
+          <label>Barcode</label>
+          <input name="barcode" [(ngModel)]="product.barcode" placeholder="Enter barcode" />
+        </div>
+
+        <div class="field">
+          <label>Category *</label>
+          <select name="categoryId" [(ngModel)]="product.categoryId" required>
+            <option [ngValue]="0" disabled>Select Category</option>
+            <option *ngFor="let c of categories" [ngValue]="c.id">
+              {{ c.name }}
+            </option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Cost Price *</label>
+          <input
+            type="number"
+            name="costPrice"
+            [(ngModel)]="product.costPrice"
+            min="0.01"
+            step="0.01"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label>Selling Price *</label>
+          <input
+            type="number"
+            name="sellingPrice"
+            [(ngModel)]="product.sellingPrice"
+            min="0.01"
+            step="0.01"
+            required
+          />
+        </div>
+
+        <div class="field full">
+          <label>Description</label>
+          <textarea
+            name="description"
+            [(ngModel)]="product.description"
+            placeholder="Enter product description"
+          ></textarea>
+        </div>
+
+        <div class="field full checkbox-field">
+          <label>
+            <input type="checkbox" name="active" [(ngModel)]="product.active" />
+            Active Product
+          </label>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="primary" (click)="saveProduct()">
+          {{ isEditing ? 'Update Product' : 'Add Product' }}
+        </button>
+
+        <button type="button" class="secondary" (click)="resetForm()">Clear</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="table-card">
+    <div class="table-header">
+      <div>
+        <h2>Product List</h2>
+        <p>Loaded Products: {{ products.length }}</p>
+        <p>View and manage registered products</p>
+      </div>
+
+      <input
+        class="search"
+        type="text"
+        [(ngModel)]="searchText"
+        placeholder="Search by name, SKU or category..."
+      />
+
+      <!-- FILTER BY CATEGORY -->
+      <select
+        class="search category-filter"
+        [(ngModel)]="selectedCategoryId"
+        aria-label="Filter products by category"
+      >
+        <option [ngValue]="0">All Categories</option>
+
+        <option *ngFor="let category of categories" [ngValue]="category.id">
+          {{ category.name }}
+        </option>
+      </select>
+
+      <!-- FILTER BY STATUS -->
+      <select
+        class="search status-filter"
+        [(ngModel)]="selectedStatus"
+        aria-label="Filter products by status"
+      >
+        <option value="all">All Status</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>Product Name</th>
+            <th>Category</th>
+            <th>Cost Price</th>
+            <th>Selling Price</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let p of filteredProducts">
+            <td>{{ p.sku }}</td>
+            <td>{{ p.name }}</td>
+            <td>{{ p.category?.name || '-' }}</td>
+            <td>{{ p.costPrice | number: '1.2-2' }}</td>
+            <td>{{ p.sellingPrice | number: '1.2-2' }}</td>
+            <td>
+              <span [class.active]="p.active" [class.inactive]="!p.active">
+                {{ p.active ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td class="actions">
+              <button type="button" class="edit" (click)="editProduct(p)">Edit</button>
+
+              <button type="button" class="delete" (click)="deleteProduct(p.id)">Delete</button>
+            </td>
+          </tr>
+
+          <tr *ngIf="filteredProducts.length === 0">
+            <td colspan="7" class="empty">No products found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<!-- SUCCESS POPUP -->
+<div
+  class="success-overlay"
+  [style.display]="showSuccessPopup ? 'flex' : 'none'"
+  role="alert"
+  aria-live="polite"
+>
+  <div class="success-popup">
+    <div class="success-popup-icon">
+      <span>&#10003;</span>
+    </div>
+
+    <h2>Success!</h2>
+    <p>{{ successPopupMessage }}</p>
+
+    <span class="success-description"> Your action has been completed successfully. </span>
+  </div>
+</div>

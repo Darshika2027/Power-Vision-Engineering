@@ -1,6 +1,7 @@
 package pve_bms_backend.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(
@@ -25,19 +26,49 @@ public class RackInventory {
     @Column(nullable = false)
     private Integer quantity = 0;
 
+    @Column(nullable = false, length = 100)
+    private String location = "Main Store";
+
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
     public RackInventory() {}
+
+    @PrePersist
+    protected void onCreate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 
     public Long getId() { return id; }
 
     public Product getProduct() { return product; }
 
-    public void setProduct(Product product) { this.product = product; }
+    public void setProduct(Product product) {
+        this.product = product;
+    }
 
     public String getRackNumber() { return rackNumber; }
 
-    public void setRackNumber(String rackNumber) { this.rackNumber = rackNumber; }
+    public void setRackNumber(String rackNumber) {
+        this.rackNumber = rackNumber;
+    }
 
     public Integer getQuantity() { return quantity; }
 
-    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+
+    public String getLocation() { return location; }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
 }

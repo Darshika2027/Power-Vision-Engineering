@@ -37,9 +37,18 @@ export class CategoryList implements OnInit {
   loadCategories(): void {
     this.categoryService.getCategories().subscribe({
       next: (data) => {
-        this.categories = data.map(item => this.mapCategory(item));
+        const response = data as unknown as
+          ApiCategory[] | { value?: ApiCategory[] };
+
+        const items = Array.isArray(response)
+          ? response
+          : response?.value ?? [];
+
+        this.categories = items.map(item => this.mapCategory(item));
       },
-      error: () => {
+      error: (error) => {
+        console.error('Category loading failed:', error);
+        this.categories = [];
         this.showToast('Unable to load categories.', 'error');
       }
     });

@@ -2,6 +2,9 @@
 import { CategoryList } from './components/category-list/category-list';
 import { ProductList } from './components/product-list/product-list';
 import { ProductBarcodeLookup } from './components/product-barcode-lookup/product-barcode-lookup';
+import { GoodsReceiving } from './components/goods-receiving/goods-receiving';
+import { RackStockManagement } from './components/rack-stock-management/rack-stock-management';
+import { BulkProductImport } from './components/bulk-product-import/bulk-product-import';
 
 export const routes: Routes = [
   {
@@ -15,5 +18,18 @@ export const routes: Routes = [
   {
     path: 'product-lookup',
     component: ProductBarcodeLookup
+  },
+  {
+    path: 'goods-receiving',
+    component: GoodsReceiving
+  },
+  {
+    path: 'rack-stock-management',
+    component: RackStockManagement
+  }
+,
+  {
+    path: 'bulk-product-import',
+    component: BulkProductImport
   }
 ];

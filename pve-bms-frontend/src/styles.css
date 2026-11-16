@@ -1,1 +1,364 @@
 /* You can add global styles to this file, and also import other style files */
+
+
+/* PVE REMOVE BOTH LEFT-SIDE MENUS */
+aside.sidebar,
+.sidebar,
+nav.navigation,
+.navigation,
+.sidebar-bottom,
+.sidebar-footer {
+    display: none !important;
+}
+
+.app-layout {
+    display: block !important;
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+}
+
+main.main-content,
+.app-layout > .main-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    grid-column: 1 / -1 !important;
+}
+/* END PVE MENU FIX */
+
+/* REMOVE LEFT SIDE MENU PANELS */
+.app-layout {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+.app-layout > :not(main):not(.main-content) {
+  display: none !important;
+}
+
+.app-layout > main,
+.app-layout > .main-content {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+}
+/* END MENU FIX */
+
+/* PVE GLOBAL ACCESSIBLE THEME START */
+
+:root {
+  --pve-navy: #142B4A;
+  --pve-teal: #087E8B;
+  --pve-teal-dark: #06636D;
+  --pve-background: #F3F6FA;
+  --pve-surface: #FFFFFF;
+  --pve-text: #26364A;
+  --pve-muted: #52647A;
+  --pve-border: #C5D0DC;
+  --pve-success: #176B3A;
+  --pve-error: #A52A2A;
+  --pve-warning: #875000;
+}
+
+/* Main page */
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--pve-background) !important;
+  color: var(--pve-text) !important;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.main-content,
+.main-content *,
+.page,
+.page *,
+.rack-page,
+.rack-page * {
+  box-sizing: border-box;
+}
+
+.main-content,
+.page,
+.rack-page {
+  color: var(--pve-text);
+}
+
+/* Common headings and readable text */
+.main-content h1,
+.page h1,
+.rack-page h1 {
+  color: var(--pve-navy) !important;
+  font-size: clamp(25px, 3vw, 32px);
+  line-height: 1.3;
+}
+
+.main-content h2,
+.main-content h3,
+.page h2,
+.page h3,
+.rack-page h2,
+.rack-page h3 {
+  color: var(--pve-navy);
+  line-height: 1.4;
+}
+
+.main-content p,
+.page p,
+.rack-page p,
+.main-content label,
+.page label,
+.rack-page label {
+  line-height: 1.55;
+}
+
+/* Shared surfaces and cards */
+.workspace,
+.table-card,
+.preview-card,
+.category-card,
+.stat-card,
+.summary-card,
+.location-card,
+.product-details-card,
+.form-modal,
+.details-modal,
+.modal-box,
+.upload-area,
+.list-container {
+  background: var(--pve-surface) !important;
+  color: var(--pve-text) !important;
+  border-color: var(--pve-border) !important;
+}
+
+/* Inputs */
+input,
+select,
+textarea,
+.search-wrapper input,
+.search-box input,
+.barcode-input-wrapper input,
+.form-group input,
+.form-group select {
+  min-height: 46px;
+  color: var(--pve-text) !important;
+  background: #FFFFFF !important;
+  border: 1px solid #899BAD !important;
+  border-radius: 7px;
+  font-size: 16px !important;
+}
+
+textarea {
+  min-height: 100px;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #596B7E !important;
+  opacity: 1;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background: #E9EEF3 !important;
+  color: #52647A !important;
+}
+
+/* Buttons */
+button,
+.primary-button,
+.primary-btn,
+.primary,
+.primary-button,
+.import-button,
+.search-btn,
+.add-item-button,
+.details-button,
+.template-button,
+.choose-file-button {
+  min-height: 44px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 7px;
+}
+
+.primary-button,
+.primary-btn,
+.primary,
+.import-button,
+.search-btn,
+.add-item-button,
+.details-button,
+.choose-file-button {
+  background: var(--pve-teal) !important;
+  color: #FFFFFF !important;
+  border-color: var(--pve-teal) !important;
+}
+
+.primary-button:hover,
+.primary-btn:hover,
+.primary:hover:not(:disabled),
+.import-button:hover:not(:disabled),
+.search-btn:hover:not(:disabled),
+.add-item-button:hover,
+.details-button:hover,
+.choose-file-button:hover {
+  background: var(--pve-teal-dark) !important;
+  color: #FFFFFF !important;
+}
+
+.secondary-button,
+.secondary-btn,
+.secondary,
+.clear-btn,
+.clear-button {
+  background: #E8EEF4 !important;
+  color: var(--pve-navy) !important;
+  border: 1px solid #899BAD !important;
+}
+
+button:disabled,
+button:disabled:hover {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Tables */
+table {
+  color: var(--pve-text) !important;
+  border-collapse: collapse;
+}
+
+table thead,
+table thead th,
+table th {
+  background: #E6EDF4 !important;
+  color: var(--pve-navy) !important;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+table td {
+  color: var(--pve-text) !important;
+  font-size: 15px;
+  border-color: #D5DEE7 !important;
+}
+
+table tbody tr:hover {
+  background: #EDF5F7 !important;
+}
+
+/* Status labels */
+.status-badge,
+.status-active,
+.status-inactive,
+.status,
+.in-stock,
+.low-stock,
+.out-stock,
+.receiving-status {
+  font-weight: 700;
+}
+
+.status-active,
+.status-badge.valid,
+.status-badge.imported,
+.in-stock,
+.alert-success,
+.success-message,
+.message.success {
+  color: #145C32 !important;
+  background: #E2F3E8 !important;
+}
+
+.status-inactive,
+.status-badge.failed,
+.out-stock,
+.alert-error,
+.error-message,
+.message.error {
+  color: #8A2020 !important;
+  background: #FBE8E8 !important;
+}
+
+.low-stock {
+  color: #754400 !important;
+  background: #FFF1D6 !important;
+}
+
+/* Secondary text */
+.breadcrumb,
+.page-header p,
+.workspace-header p,
+.section-heading p,
+.summary-label,
+.field-hint,
+.input-hint,
+.file-requirements,
+.footer-information span,
+.stat-note {
+  color: var(--pve-muted) !important;
+}
+
+/* Navbar */
+.navbar {
+  background: var(--pve-navy) !important;
+  color: #FFFFFF !important;
+}
+
+/* Visible keyboard focus */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid #E09B27 !important;
+  outline-offset: 3px !important;
+}
+
+/* Links and text selection */
+a {
+  color: #075F80;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+::selection {
+  background: #B8E3E7;
+  color: #142B4A;
+}
+
+/* Responsive layout */
+@media (max-width: 768px) {
+  body {
+    font-size: 16px;
+  }
+
+  .main-content,
+  .page,
+  .rack-page {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  table {
+    font-size: 14px;
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    max-width: 100%;
+  }
+}
+
+/* PVE GLOBAL ACCESSIBLE THEME END */

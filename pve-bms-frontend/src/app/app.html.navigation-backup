@@ -1,0 +1,45 @@
+<header class="navbar">
+  <div class="brand">
+    <div class="brand-logo">PV</div>
+    <div class="brand-text">
+      <h2>POWER VISION</h2>
+      <span>ENGINEERING</span>
+    </div>
+  </div>
+
+  <nav class="nav-links">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <span class="nav-icon">▦</span>
+      Categories
+    </a>
+
+    <a routerLink="/products" routerLinkActive="active">
+      <span class="nav-icon">📦</span>
+      Products
+    </a>
+
+    <a routerLink="/product-lookup" routerLinkActive="active">
+      <span class="nav-icon">▤</span>
+      Barcode
+    </a>
+
+    <a routerLink="/goods-receiving" routerLinkActive="active">
+      <span class="nav-icon">📥</span>
+      Receiving
+    </a>
+
+    <a routerLink="/rack-stock-management" routerLinkActive="active">
+      <span class="nav-icon">🏬</span>
+      Rack & Stock
+    </a>
+  </nav>
+
+  <div class="nav-right">
+    <span class="system-status"></span>
+    <span>Management System</span>
+  </div>
+</header>
+
+<main class="main-content">
+  <router-outlet></router-outlet>
+</main>

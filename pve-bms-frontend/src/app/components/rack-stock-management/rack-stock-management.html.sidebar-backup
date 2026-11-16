@@ -1,0 +1,164 @@
+﻿<div class="rack-page">
+  <div class="page-header">
+    <div>
+      <div class="breadcrumb">Inventory / Rack Management</div>
+      <h1>Rack & Stock Locations</h1>
+      <p>Manage warehouse racks and product stock locations.</p>
+    </div>
+    <button class="primary-btn" (click)="openAddModal()">＋ Add Stock Location</button>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="summary-icon blue">▦</div>
+      <div><p>Total Racks</p><h2>{{ totalRacks }}</h2><span>Registered rack locations</span></div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-icon purple">▤</div>
+      <div><p>Product Entries</p><h2>{{ totalProducts }}</h2><span>Products assigned to racks</span></div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-icon green">▣</div>
+      <div><p>Total Stock</p><h2>{{ totalStock }}</h2><span>Units across all racks</span></div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-icon orange">⚠</div>
+      <div><p>Low Stock</p><h2>{{ lowStock }}</h2><span>Products need attention</span></div>
+    </div>
+  </div>
+
+  <div class="section-heading">
+    <h2>Stock Location Overview</h2>
+    <p>View and manage product placement in your warehouse.</p>
+  </div>
+
+  <div class="location-grid">
+    <div class="location-card">
+      <div class="location-top"><div class="location-icon">🏢</div><span class="location-tag">Main</span></div>
+      <h3>Main Store</h3><p>Primary warehouse storage area</p>
+      <div class="location-bottom"><strong>{{ mainStoreEntries }}</strong><span>Stock entries</span></div>
+    </div>
+    <div class="location-card">
+      <div class="location-top"><div class="location-icon">🏬</div><span class="location-tag">Front</span></div>
+      <h3>Front Store</h3><p>Front display and sales storage</p>
+      <div class="location-bottom"><strong>{{ frontStoreEntries }}</strong><span>Stock entries</span></div>
+    </div>
+    <div class="location-card">
+      <div class="location-top"><div class="location-icon">📦</div><span class="location-tag">Back</span></div>
+      <h3>Back Store</h3><p>Additional warehouse storage</p>
+      <div class="location-bottom"><strong>{{ backStoreEntries }}</strong><span>Stock entries</span></div>
+    </div>
+  </div>
+
+  <div class="table-section">
+    <div class="table-header">
+      <div><h2>Rack Stock Details</h2><p>Product-wise rack allocation and available quantities.</p></div>
+      <span class="record-count">{{ filteredItems.length }} Records</span>
+    </div>
+
+    <div class="filter-bar">
+      <div class="search-box">
+        <span>⌕</span>
+        <input type="text" placeholder="Search product, SKU or rack number..." [(ngModel)]="searchText">
+      </div>
+      <select [(ngModel)]="selectedLocation">
+        <option *ngFor="let location of locations" [value]="location">{{ location }}</option>
+      </select>
+      <button class="secondary-btn" (click)="searchText = ''; selectedLocation = 'All Locations'">Reset Filters</button>
+    </div>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>RACK NUMBER</th><th>PRODUCT DETAILS</th><th>CATEGORY</th>
+            <th>LOCATION</th><th>QUANTITY</th><th>STOCK STATUS</th>
+            <th>LAST UPDATED</th><th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of filteredItems">
+            <td><span class="rack-code">{{ item.rackNumber }}</span></td>
+            <td><div class="product-cell"><strong>{{ item.productName }}</strong><span>{{ item.sku }}</span></div></td>
+            <td>{{ item.category }}</td>
+            <td><span class="location-label">{{ item.location }}</span></td>
+            <td><strong class="quantity">{{ item.quantity }}</strong><span class="unit"> units</span></td>
+            <td>
+              <span class="status" [ngClass]="{
+                'in-stock': item.quantity > 10,
+                'low-stock': item.quantity > 0 && item.quantity <= 10,
+                'out-stock': item.quantity === 0
+              }">{{ getStockStatus(item.quantity) }}</span>
+            </td>
+            <td>{{ item.updatedAt }}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="icon-btn edit-btn" title="Edit" (click)="openEditModal(item)">✎</button>
+                <button class="icon-btn delete-btn" title="Delete" (click)="deleteRackItem(item)">×</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="filteredItems.length === 0">
+            <td colspan="8" class="empty-state">
+              <div class="empty-icon">⌕</div>
+              <strong>No stock locations found</strong>
+              <p>Try changing your search or location filter.</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <h2>{{ editingId ? 'Edit Stock Location' : 'Add Stock Location' }}</h2>
+        <p>Enter product and rack allocation details.</p>
+      </div>
+      <button class="close-btn" (click)="closeModal()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Rack Number *</label>
+        <input type="text" [(ngModel)]="form.rackNumber" placeholder="Example: RACK-A01">
+      </div>
+      <div class="form-group">
+        <label>Product Name *</label>
+        <input type="text" [(ngModel)]="form.productName" placeholder="Enter product name">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Product SKU *</label>
+          <input type="text" [(ngModel)]="form.sku" placeholder="PVE-001">
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <input type="text" [(ngModel)]="form.category" placeholder="Product category">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Stock Quantity *</label>
+          <input type="number" min="0" [(ngModel)]="form.quantity">
+        </div>
+        <div class="form-group">
+          <label>Stock Location *</label>
+          <select [(ngModel)]="form.location">
+            <option value="Main Store">Main Store</option>
+            <option value="Front Store">Front Store</option>
+            <option value="Back Store">Back Store</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="secondary-btn" (click)="closeModal()">Cancel</button>
+      <button class="primary-btn" (click)="saveRack()">{{ editingId ? 'Save Changes' : 'Add Stock Location' }}</button>
+    </div>
+  </div>
+</div>

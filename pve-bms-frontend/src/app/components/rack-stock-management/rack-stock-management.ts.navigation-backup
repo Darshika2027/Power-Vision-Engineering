@@ -1,0 +1,163 @@
+import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+
+interface RackItem {
+  id: number;
+  rackNumber: string;
+  productName: string;
+  sku: string;
+  category: string;
+  quantity: number;
+  location: string;
+  updatedAt: string;
+}
+
+@Component({
+  selector: 'app-rack-stock-management',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive],
+  templateUrl: './rack-stock-management.html',
+  styleUrl: './rack-stock-management.css'
+})
+export class RackStockManagement {
+  searchText = '';
+  selectedLocation = 'All Locations';
+  showModal = false;
+  editingId: number | null = null;
+
+  locations = ['All Locations', 'Main Store', 'Front Store', 'Back Store'];
+
+  rackItems: RackItem[] = [
+    { id: 1, rackNumber: 'RACK-A01', productName: 'Electrical Wire 2.5mm', sku: 'PVE-001', category: 'Electrical Accessories', quantity: 120, location: 'Main Store', updatedAt: '2026-11-15' },
+    { id: 2, rackNumber: 'RACK-A02', productName: 'LED Bulb 12W', sku: 'PVE-002', category: 'Lighting', quantity: 8, location: 'Main Store', updatedAt: '2026-11-15' },
+    { id: 3, rackNumber: 'RACK-B01', productName: 'Power Extension 5m', sku: 'PVE-003', category: 'Electrical Accessories', quantity: 0, location: 'Front Store', updatedAt: '2026-11-14' },
+    { id: 4, rackNumber: 'RACK-C01', productName: 'Circuit Breaker 32A', sku: 'PVE-004', category: 'Protection Devices', quantity: 45, location: 'Back Store', updatedAt: '2026-11-14' }
+  ];
+
+  form: RackItem = this.emptyForm();
+
+  emptyForm(): RackItem {
+    return {
+      id: 0, rackNumber: '', productName: '', sku: '',
+      category: '', quantity: 0, location: 'Main Store',
+      updatedAt: new Date().toISOString().slice(0, 10)
+    };
+  }
+
+  get totalRacks(): number {
+    return new Set(this.rackItems.map(item => item.rackNumber)).size;
+  }
+
+  get totalProducts(): number {
+    return this.rackItems.length;
+  }
+
+  get totalStock(): number {
+    return this.rackItems.reduce((sum, item) => sum + item.quantity, 0);
+  }
+
+  get lowStock(): number {
+    return this.rackItems.filter(item => item.quantity > 0 && item.quantity <= 10).length;
+  }
+
+  get mainStoreEntries(): number {
+    return this.rackItems.filter(item => item.location === 'Main Store').length;
+  }
+
+  get frontStoreEntries(): number {
+    return this.rackItems.filter(item => item.location === 'Front Store').length;
+  }
+
+  get backStoreEntries(): number {
+    return this.rackItems.filter(item => item.location === 'Back Store').length;
+  }
+
+  get filteredItems(): RackItem[] {
+    const search = this.searchText.toLowerCase().trim();
+
+    return this.rackItems.filter(item => {
+      const matchesSearch =
+        item.productName.toLowerCase().includes(search) ||
+        item.sku.toLowerCase().includes(search) ||
+        item.rackNumber.toLowerCase().includes(search);
+
+      const matchesLocation =
+        this.selectedLocation === 'All Locations' ||
+        item.location === this.selectedLocation;
+
+      return matchesSearch && matchesLocation;
+    });
+  }
+
+  getStockStatus(quantity: number): string {
+    if (quantity === 0) return 'Out of Stock';
+    if (quantity <= 10) return 'Low Stock';
+    return 'In Stock';
+  }
+
+  openAddModal(): void {
+    this.editingId = null;
+    this.form = this.emptyForm();
+    this.showModal = true;
+  }
+
+  openEditModal(item: RackItem): void {
+    this.editingId = item.id;
+    this.form = { ...item };
+    this.showModal = true;
+  }
+
+  closeModal(): void {
+    this.showModal = false;
+    this.editingId = null;
+  }
+
+  saveRack(): void {
+    if (
+      !this.form.rackNumber.trim() ||
+      !this.form.productName.trim() ||
+      !this.form.sku.trim() ||
+      this.form.quantity < 0
+    ) {
+      alert('Please complete all required fields.');
+      return;
+    }
+
+    const duplicate = this.rackItems.some(item =>
+      item.rackNumber.toLowerCase() === this.form.rackNumber.toLowerCase() &&
+      item.sku.toLowerCase() === this.form.sku.toLowerCase() &&
+      item.id !== this.editingId
+    );
+
+    if (duplicate) {
+      alert('This product is already assigned to this rack.');
+      return;
+    }
+
+    if (this.editingId !== null) {
+      const index = this.rackItems.findIndex(item => item.id === this.editingId);
+      if (index !== -1) {
+        this.rackItems[index] = {
+          ...this.form,
+          id: this.editingId,
+          updatedAt: new Date().toISOString().slice(0, 10)
+        };
+      }
+    } else {
+      this.rackItems.push({
+        ...this.form,
+        id: Math.max(0, ...this.rackItems.map(item => item.id)) + 1,
+        updatedAt: new Date().toISOString().slice(0, 10)
+      });
+    }
+
+    this.closeModal();
+  }
+
+  deleteRackItem(item: RackItem): void {
+    if (!confirm(`Remove ${item.productName} from ${item.rackNumber}?`)) return;
+    this.rackItems = this.rackItems.filter(rack => rack.id !== item.id);
+  }
+}

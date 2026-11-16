@@ -2,7 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { CategoryService, Category as ApiCategory } from '../../services/category.service';
 
 interface Category {
@@ -20,7 +20,7 @@ interface Category {
 @Component({
   selector: 'app-category-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './category-list.html',
   styleUrl: './category-list.css'
 })
@@ -37,9 +37,18 @@ export class CategoryList implements OnInit {
   loadCategories(): void {
     this.categoryService.getCategories().subscribe({
       next: (data) => {
-        this.categories = data.map(item => this.mapCategory(item));
+        const response = data as unknown as
+          ApiCategory[] | { value?: ApiCategory[] };
+
+        const items = Array.isArray(response)
+          ? response
+          : response?.value ?? [];
+
+        this.categories = items.map(item => this.mapCategory(item));
       },
-      error: () => {
+      error: (error) => {
+        console.error('Category loading failed:', error);
+        this.categories = [];
         this.showToast('Unable to load categories.', 'error');
       }
     });

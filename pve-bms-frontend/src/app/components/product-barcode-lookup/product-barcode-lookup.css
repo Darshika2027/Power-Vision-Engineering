@@ -1250,3 +1250,7 @@ button {
     padding: 0 12px;
   }
 }
+/* SIDEBAR AND NAVIGATION HIDDEN */
+.sidebar, .navbar, .nav-links, .navigation { display: none !important; }
+.app-layout { display: block !important; width: 100% !important; }
+.app-layout > .main-content { width: 100% !important; max-width: 100% !important; margin: 0 !important; }

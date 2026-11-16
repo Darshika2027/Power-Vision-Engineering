@@ -1,0 +1,275 @@
+﻿<div class="bulk-page">
+
+  <div class="page-header">
+    <div>
+      <div class="breadcrumb">Products / Bulk Import</div>
+      <h1>Bulk Product Import</h1>
+      <p class="page-description">
+        Import multiple products into PVE-BMS using an Excel spreadsheet.
+      </p>
+    </div>
+
+    <button class="template-button"
+            type="button"
+            (click)="downloadTemplate()"
+            [disabled]="dataLoading">
+      <span class="button-icon">↓</span>
+      Download Excel Template
+    </button>
+  </div>
+
+  <div class="alert alert-error" *ngIf="errorMessage">
+    <span class="alert-icon">!</span>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <div class="alert alert-success" *ngIf="successMessage">
+    <span class="alert-icon">✓</span>
+    <span>{{ successMessage }}</span>
+  </div>
+
+  <section class="upload-card">
+
+    <div class="section-heading">
+      <div>
+        <h2>Upload Excel File</h2>
+        <p>Select your completed product spreadsheet.</p>
+      </div>
+      <span class="step-number">01</span>
+    </div>
+
+    <div class="upload-area"
+         [class.has-file]="selectedFile">
+
+      <div class="upload-icon">⇧</div>
+
+      <h3 *ngIf="!selectedFile">Choose an Excel file</h3>
+      <h3 *ngIf="selectedFile">{{ fileName }}</h3>
+
+      <p *ngIf="!selectedFile">
+        Select an .xlsx file from your computer.
+      </p>
+
+      <p *ngIf="selectedFile">
+        File selected successfully.
+      </p>
+
+      <label class="choose-file-button">
+        Browse Files
+        <input
+          type="file"
+          accept=".xlsx"
+          (change)="onFileSelected($event)"
+          [disabled]="loading || importing">
+      </label>
+
+      <button
+        *ngIf="selectedFile"
+        class="clear-button"
+        type="button"
+        (click)="clearFile()"
+        [disabled]="importing">
+        Remove File
+      </button>
+
+      <div class="file-requirements">
+        <span>Excel format: .xlsx</span>
+        <span>Maximum size: 10 MB</span>
+        <span>Maximum records: 5,000</span>
+      </div>
+    </div>
+
+    <div class="loading-message" *ngIf="loading">
+      <span class="spinner"></span>
+      Reading and validating Excel file...
+    </div>
+
+    <div class="loading-message" *ngIf="dataLoading">
+      Loading existing products and categories...
+    </div>
+
+  </section>
+
+  <section class="instructions-card">
+    <div class="section-heading">
+      <div>
+        <h2>Import Instructions</h2>
+        <p>Follow these rules before importing.</p>
+      </div>
+      <span class="step-number">02</span>
+    </div>
+
+    <div class="instruction-grid">
+      <div class="instruction-item">
+        <span class="instruction-check">✓</span>
+        <span>SKU and Product Name are required.</span>
+      </div>
+
+      <div class="instruction-item">
+        <span class="instruction-check">✓</span>
+        <span>Select an existing product category.</span>
+      </div>
+
+      <div class="instruction-item">
+        <span class="instruction-check">✓</span>
+        <span>Cost Price and Selling Price must be greater than zero.</span>
+      </div>
+
+      <div class="instruction-item">
+        <span class="instruction-check">✓</span>
+        <span>SKU and Barcode must not already exist.</span>
+      </div>
+
+      <div class="instruction-item">
+        <span class="instruction-check">✓</span>
+        <span>Barcode and Description are optional.</span>
+      </div>
+
+      <div class="instruction-item">
+        <span class="instruction-check">✓</span>
+        <span>Remove the example row before importing.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="preview-card" *ngIf="rows.length > 0">
+
+    <div class="section-heading">
+      <div>
+        <h2>Import Preview</h2>
+        <p>Review the product records before importing.</p>
+      </div>
+      <span class="step-number">03</span>
+    </div>
+
+    <div class="summary-grid">
+
+      <div class="summary-item total">
+        <span class="summary-label">Total Records</span>
+        <strong>{{ totalRows }}</strong>
+      </div>
+
+      <div class="summary-item valid">
+        <span class="summary-label">Valid Records</span>
+        <strong>{{ validCount }}</strong>
+      </div>
+
+      <div class="summary-item invalid">
+        <span class="summary-label">Invalid Records</span>
+        <strong>{{ invalidCount }}</strong>
+      </div>
+
+      <div class="summary-item duplicate">
+        <span class="summary-label">Duplicates</span>
+        <strong>{{ duplicateCount }}</strong>
+      </div>
+
+      <div class="summary-item imported">
+        <span class="summary-label">Imported</span>
+        <strong>{{ importedRows }}</strong>
+      </div>
+
+    </div>
+
+    <div class="table-heading">
+      <div>
+        <h3>Product Records</h3>
+        <p>Invalid and duplicate records will not be imported.</p>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Row</th>
+            <th>SKU</th>
+            <th>Product Name</th>
+            <th>Category</th>
+            <th>Barcode</th>
+            <th>Cost Price</th>
+            <th>Selling Price</th>
+            <th>Status</th>
+            <th>Validation Details</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let row of rows">
+            <td>{{ row.rowNumber }}</td>
+            <td class="sku-cell">{{ row.sku || '-' }}</td>
+            <td>{{ row.name || '-' }}</td>
+            <td>{{ row.categoryName || '-' }}</td>
+            <td>{{ row.barcode || '-' }}</td>
+            <td>{{ row.costPrice || '-' }}</td>
+            <td>{{ row.sellingPrice || '-' }}</td>
+
+            <td>
+              <span class="status-badge"
+                    [ngClass]="row.status.toLowerCase()">
+                {{ row.status }}
+              </span>
+            </td>
+
+            <td class="issue-cell">
+              <span *ngIf="row.issues.length > 0">
+                {{ row.issues.join(' ') }}
+              </span>
+
+              <span *ngIf="row.error">
+                {{ row.error }}
+              </span>
+
+              <span *ngIf="row.issues.length === 0 && !row.error">
+                -
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="import-progress" *ngIf="importing || currentImport > 0">
+
+      <div class="progress-heading">
+        <span>
+          {{ importing ? 'Importing products...' : 'Import completed' }}
+        </span>
+        <strong>{{ importProgress }}%</strong>
+      </div>
+
+      <div class="progress-track">
+        <div class="progress-fill"
+             [style.width.%]="importProgress">
+        </div>
+      </div>
+
+      <p>{{ currentImport }} of {{ validCount + importedRows + failedCount }} records processed.</p>
+    </div>
+
+    <div class="preview-footer">
+      <div class="footer-information">
+        <strong>{{ validCount }} valid records ready</strong>
+        <span>Only valid records will be sent to the database.</span>
+      </div>
+
+      <button
+        type="button"
+        class="import-button"
+        (click)="importProducts()"
+        [disabled]="validCount === 0 || importing || loading || dataLoading">
+
+        <span *ngIf="!importing">Import Valid Products</span>
+        <span *ngIf="importing">Importing...</span>
+      </button>
+    </div>
+
+  </section>
+
+  <section class="empty-state" *ngIf="!rows.length && !loading">
+    <div class="empty-icon">▤</div>
+    <h3>No Product Records to Preview</h3>
+    <p>Download the Excel template, add your products and upload the file.</p>
+  </section>
+
+</div>

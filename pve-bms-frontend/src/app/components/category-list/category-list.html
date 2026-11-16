@@ -3,47 +3,71 @@
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
-  <div class="brand">
-    <div class="brand-logo">PVE</div>
-    <div>
-      <h2>PVE-BMS</h2>
-      <span>Business Management</span>
+    <div class="brand">
+      <div class="brand-logo">PVE</div>
+      <div>
+        <h2>PVE-BMS</h2>
+        <span>Business Management</span>
+      </div>
     </div>
-  </div>
 
-  <div class="nav-label">MAIN MENU</div>
+    <div class="nav-label">MAIN MENU</div>
 
-  <nav class="navigation">
-    <a class="nav-item" routerLink="/products">
-      <span>&#9638;</span> Products
-    </a>
+    <nav class="navigation">
+      <a class="nav-item">
+        <span>⌂</span> Dashboard
+      </a>
 
-    <a class="nav-item" routerLink="/" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="active">
-      <span>&#9633;</span> Categories
-    </a>
+      <a class="nav-item" routerLink="/products">
+        <span>â–£</span> Products
+      </a>
 
-    <a class="nav-item" routerLink="/product-lookup" routerLinkActive="active">
-      <span>&#9635;</span> Barcode Lookup
-    </a>
+      <a class="nav-item" routerLink="/">
+        <span>▦</span> Categories
+      </a>
 
-    <a class="nav-item" routerLink="/goods-receiving" routerLinkActive="active">
-      <span>&#9634;</span> Goods Receiving
-    </a>
+      <a class="nav-item" routerLink="/product-lookup">
+        <span>â–¥</span> Barcode Lookup
+      </a>
 
-    <a class="nav-item" routerLink="/rack-stock-management" routerLinkActive="active">
-      <span>&#9636;</span> Rack &amp; Stock
-    </a>
-  </nav>
+      <a class="nav-item">
+        <span>â–¤</span> Subcategories
+      </a>
 
-  <div class="sidebar-bottom">
-    <div class="sidebar-message">
-      <span class="message-icon">&#10022;</span>
-      <h3>Build Better.</h3>
-      <p>Manage Smarter.</p>
+      <a class="nav-item">
+        <span>â–£</span> Inventory
+      </a>
+
+      <a class="nav-item">
+        <span>🛒</span> Sales (POS)
+      </a>
+
+      <a class="nav-item">
+        <span>â™§</span> Suppliers
+      </a>
+
+      <a class="nav-item">
+        <span>âš’</span> Repairs
+      </a>
+
+      <a class="nav-item">
+        <span>â–¥</span> Reports
+      </a>
+
+      <a class="nav-item">
+        <span>âš™</span> Settings
+      </a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="sidebar-message">
+        <span class="message-icon">✦</span>
+        <h3>Build Better.</h3>
+        <p>Manage Smarter.</p>
+      </div>
+      <span class="version">PVE-BMS Â· Frontend Demo</span>
     </div>
-    <span class="version">PVE-BMS | Frontend Demo</span>
-  </div>
-</aside>
+  </aside>
 
   <!-- MAIN CONTENT -->
   <main class="main-content">
@@ -60,7 +84,7 @@
           <span class="online-dot"></span>
           System Online
         </div>
-        <button class="notification-btn" type="button">♧</button>
+        <button class="notification-btn" type="button">â™§</button>
         <div class="profile">
           <div class="avatar">A</div>
           <div>
@@ -110,7 +134,7 @@
       </div>
 
       <div class="stat-card stat-orange">
-        <div class="stat-icon">◷</div>
+        <div class="stat-icon">&#9675;</div>
         <div class="stat-info">
           <span>Inactive Categories</span>
           <h2>{{ inactiveCount }}</h2>
@@ -140,7 +164,7 @@
         </div>
 
         <button class="primary-button" (click)="openAddForm()">
-          <span>＋</span> Add New Category
+          <span aria-hidden="true">+</span> Add New Category
         </button>
       </div>
 
@@ -176,7 +200,7 @@
             type="button"
             [class.selected]="viewMode === 'list'"
             (click)="viewMode = 'list'">
-            ☷ List
+            â˜· List
           </button>
         </div>
       </div>
@@ -208,14 +232,14 @@
           </div>
 
           <div class="category-meta">
-            <span>▣ {{ category.productCount }} Products</span>
+            <span>â–£ {{ category.productCount }} Products</span>
             <span *ngIf="category.parentId">Subcategory</span>
             <span *ngIf="!category.parentId">Main Category</span>
           </div>
 
           <div class="card-footer">
             <button class="text-action" (click)="viewDetails(category)">
-              View Details →
+              View Details â†’
             </button>
 
             <div class="card-actions">
@@ -227,7 +251,7 @@
               <button
                 class="icon-action status-action"
                 title="Change status"
-                (click)="toggleStatus(category)">⟳</button>
+                (click)="toggleStatus(category)">âŸ³</button>
 
               <button
                 class="icon-action delete-action"
@@ -243,7 +267,7 @@
           <h3>No categories found</h3>
           <p>Try another search or add a new category.</p>
           <button class="primary-button" (click)="openAddForm()">
-            Add Category
+            <span aria-hidden="true">+</span> Add Category
           </button>
         </div>
 
@@ -327,8 +351,8 @@
     </section>
 
     <footer class="page-footer">
-      <span>© 2026 Power Vision Engineering</span>
-      <span>PVE-BMS · Business Management System</span>
+      <span>Â© 2026 Power Vision Engineering</span>
+      <span>PVE-BMS Â· Business Management System</span>
     </footer>
 
   </main>
@@ -368,11 +392,15 @@
         maxlength="250"></textarea>
 
       <label>Parent Category</label>
-      <select name="parentId" [(ngModel)]="form.parentId">
+      <select
+        name="parentId"
+        [(ngModel)]="form.parentId"
+        class="parent-category-select">
         <option [ngValue]="null">Main Category (No Parent)</option>
         <option
-          *ngFor="let parent of parentCategories"
-          [ngValue]="parent.id">
+          *ngFor="let parent of categories"
+          [ngValue]="parent.id"
+          [disabled]="parent.id === editingId">
           {{ parent.name }}
         </option>
       </select>

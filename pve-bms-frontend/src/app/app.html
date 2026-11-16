@@ -1,1 +1,78 @@
-<router-outlet></router-outlet>
+<header class="navbar">
+
+  <button
+    class="menu-toggle"
+    type="button"
+    (click)="toggleMenu()"
+    [attr.aria-expanded]="isMenuOpen"
+    aria-label="Toggle navigation menu">
+
+    <span></span>
+    <span></span>
+    <span></span>
+
+  </button>
+
+  <div class="brand">
+    <div class="brand-logo">PVE</div>
+    <div class="brand-text">
+      <h2>POWER VISION</h2>
+      <span>ENGINEERING</span>
+    </div>
+
+
+  </div>
+
+
+
+  <div class="nav-right">
+    <span class="system-status"></span>
+    <span>Management System</span>
+  </div>
+
+</header>
+
+<nav class="menu-panel" [class.menu-open]="isMenuOpen">
+
+  <a routerLink="/"
+     routerLinkActive="active"
+     [routerLinkActiveOptions]="{ exact: true }"
+     (click)="closeMenu()">
+    Categories
+  </a>
+
+  <a routerLink="/products"
+     routerLinkActive="active"
+     (click)="closeMenu()">
+    Products
+  </a>
+
+  <a routerLink="/product-lookup"
+     routerLinkActive="active"
+     (click)="closeMenu()">
+    Barcode Lookup
+  </a>
+
+  <a routerLink="/goods-receiving"
+     routerLinkActive="active"
+     (click)="closeMenu()">
+    Goods Receiving
+  </a>
+
+  <a routerLink="/rack-stock-management"
+     routerLinkActive="active"
+     (click)="closeMenu()">
+    Rack & Stock
+  </a>
+
+  <a routerLink="/bulk-product-import"
+     routerLinkActive="active"
+     (click)="closeMenu()">
+    Bulk Product Import
+  </a>
+
+</nav>
+
+<main class="main-content">
+  <router-outlet></router-outlet>
+</main>

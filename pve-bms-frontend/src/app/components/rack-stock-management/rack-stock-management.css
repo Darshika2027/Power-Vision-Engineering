@@ -829,3 +829,372 @@ tbody tr:hover { background: #19263b; }
     font-size: 32px;
   }
 }
+
+/* SIDEBAR AND NAVIGATION HIDDEN */
+.sidebar, .navbar, .nav-links, .navigation { display: none !important; }
+.app-layout { display: block !important; width: 100% !important; }
+.app-layout > .main-content { width: 100% !important; max-width: 100% !important; margin: 0 !important; }
+
+/* =========================================
+   RACK STOCK ALLOCATION
+   CATEGORY MANAGEMENT MATCHING THEME
+========================================= */
+
+:host {
+  color: #1a3159;
+  background: #f5f7fc;
+}
+
+/* Main page */
+
+.rack-page {
+  background: #f5f7fc;
+  color: #1a3159;
+}
+
+/* Page headings */
+
+.breadcrumb {
+  color: #64748b;
+}
+
+.page-header h1,
+.section-heading h2,
+.table-header h2 {
+  color: #091b3d;
+}
+
+.page-header p,
+.section-heading p,
+.table-header p {
+  color: #52627a;
+}
+
+/* Primary buttons */
+
+.primary-btn {
+  background: linear-gradient(100deg, #176fe4, #5149d9);
+  border: 1px solid #176fe4;
+  color: #ffffff;
+}
+
+.primary-btn:hover {
+  background: #1459bd;
+}
+
+/* Summary cards */
+
+.summary-card,
+.location-card,
+.table-section {
+  background: #ffffff;
+  border: 1px solid #dce4ef;
+  box-shadow: 0 3px 12px rgba(9, 27, 61, 0.06);
+}
+
+.summary-card p {
+  color: #52627a;
+}
+
+.summary-card h2 {
+  color: #091b3d;
+}
+
+.summary-card span {
+  color: #64748b;
+}
+
+/* Summary icons */
+
+.blue {
+  background: #e5efff;
+  color: #176fe4;
+}
+
+.purple {
+  background: #eee9ff;
+  color: #5149d9;
+}
+
+.green {
+  background: #e3f5eb;
+  color: #176b3a;
+}
+
+.orange {
+  background: #fff1df;
+  color: #875000;
+}
+
+/* Location cards */
+
+.location-card {
+  border-radius: 12px;
+}
+
+.location-card:hover {
+  border-color: #176fe4;
+  box-shadow: 0 6px 18px rgba(9, 27, 61, 0.1);
+}
+
+.location-icon {
+  background: #e5efff;
+  color: #176fe4;
+}
+
+.location-tag,
+.record-count {
+  color: #1459bd;
+  background: #e5efff;
+}
+
+.location-card h3 {
+  color: #091b3d;
+}
+
+.location-card p {
+  color: #52627a;
+}
+
+.location-bottom {
+  border-top-color: #dce4ef;
+}
+
+.location-bottom strong {
+  color: #176fe4;
+}
+
+.location-bottom span {
+  color: #52627a;
+}
+
+/* Table header */
+
+.table-header {
+  background: #ffffff;
+}
+
+.filter-bar {
+  background: #ffffff;
+}
+
+thead {
+  background: #eaf0f8;
+}
+
+th {
+  color: #26364a;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+td {
+  color: #26364a;
+  border-top: 1px solid #e1e7f0;
+}
+
+tbody tr:hover {
+  background: #f0f5fc;
+}
+
+/* Search and filters */
+
+.search-box {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+}
+
+.search-box span {
+  color: #52627a;
+}
+
+.search-box input {
+  color: #1a3159;
+}
+
+.search-box input::placeholder {
+  color: #64748b;
+}
+
+.filter-bar select,
+.form-group select {
+  background: #ffffff;
+  color: #1a3159;
+  border: 1px solid #cbd5e1;
+}
+
+.secondary-btn {
+  background: #eaf0f8;
+  color: #142b4a;
+  border: 1px solid #cbd5e1;
+}
+
+.secondary-btn:hover {
+  background: #dce8f7;
+}
+
+/* Product and rack information */
+
+.rack-code {
+  background: #e5efff;
+  color: #1459bd;
+}
+
+.product-cell strong {
+  color: #091b3d;
+}
+
+.product-cell span,
+.unit {
+  color: #52627a;
+}
+
+.location-label {
+  color: #26364a;
+}
+
+.quantity {
+  color: #091b3d;
+  font-weight: 600;
+}
+
+/* Stock status */
+
+.in-stock {
+  color: #176b3a;
+  background: #e3f5eb;
+}
+
+.low-stock {
+  color: #875000;
+  background: #fff1df;
+}
+
+.out-stock {
+  color: #a52a2a;
+  background: #fdeaea;
+}
+
+/* Action buttons */
+
+.icon-btn {
+  background: #eaf0f8;
+  border: 1px solid #cbd5e1;
+}
+
+.edit-btn {
+  color: #1459bd;
+}
+
+.delete-btn {
+  color: #a52a2a;
+}
+
+/* Empty and loading states */
+
+.empty-state {
+  color: #26364a;
+}
+
+.empty-state p,
+.loading-state {
+  color: #52627a;
+}
+
+/* Modal */
+
+.modal-overlay {
+  background: rgba(9, 27, 61, 0.55);
+}
+
+.modal-box {
+  background: #ffffff;
+  border: 1px solid #dce4ef;
+  box-shadow: 0 20px 60px rgba(9, 27, 61, 0.2);
+}
+
+.modal-header {
+  background: #f5f7fc;
+  border-bottom: 1px solid #dce4ef;
+}
+
+.modal-header h2 {
+  color: #091b3d;
+}
+
+.modal-header p {
+  color: #52627a;
+}
+
+.close-btn {
+  color: #26364a;
+}
+
+.modal-body {
+  background: #ffffff;
+}
+
+.form-group label {
+  color: #26364a;
+}
+
+.form-group input {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #1a3159;
+}
+
+.form-group input::placeholder {
+  color: #64748b;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.search-box:focus-within {
+  border-color: #176fe4;
+  outline: 2px solid rgba(23, 111, 228, 0.15);
+}
+
+.modal-footer {
+  background: #f5f7fc;
+  border-top: 1px solid #dce4ef;
+}
+
+/* API messages */
+
+.error-message {
+  color: #8b1e1e;
+  background: #fdeaea;
+  border: 1px solid #e8b5b5;
+}
+
+.success-message {
+  color: #176b3a;
+  background: #e3f5eb;
+  border: 1px solid #b8dfc7;
+}
+
+.field-hint {
+  color: #a52a2a;
+}
+
+.selected-product {
+  color: #1459bd;
+}
+
+/* Disabled controls */
+
+.icon-btn:disabled,
+.primary-btn:disabled,
+.secondary-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Responsive layout preserved */
+
+@media (max-width: 750px) {
+  .rack-page {
+    background: #f5f7fc;
+  }
+}

@@ -1,45 +1,70 @@
-<div class="app-layout"><aside class="sidebar">
-  <div class="brand">
-    <div class="brand-logo">PVE</div>
-    <div>
-      <h2>PVE-BMS</h2>
-      <span>Business Management</span>
+<div class="app-layout">
+<aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">PVE</div>
+      <div>
+        <h2>PVE-BMS</h2>
+        <span>Business Management</span>
+      </div>
     </div>
-  </div>
 
-  <div class="nav-label">MAIN MENU</div>
+    <div class="nav-label">MAIN MENU</div>
 
-  <nav class="navigation">
-    <a class="nav-item" routerLink="/products">
-      <span>&#9638;</span> Products
-    </a>
+    <nav class="navigation">
+      <a class="nav-item">
+        <span>⌂</span> Dashboard
+      </a>
 
-    <a class="nav-item" routerLink="/" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="active">
-      <span>&#9633;</span> Categories
-    </a>
+      <a class="nav-item" routerLink="/products" routerLinkActive="active">
+        <span>â–£</span> Products
+      </a>
 
-    <a class="nav-item" routerLink="/product-lookup" routerLinkActive="active">
-      <span>&#9635;</span> Barcode Lookup
-    </a>
+      <a class="nav-item" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <span>▦</span> Categories
+      </a>
 
-    <a class="nav-item" routerLink="/goods-receiving" routerLinkActive="active">
-      <span>&#9634;</span> Goods Receiving
-    </a>
+      <a class="nav-item" routerLink="/product-lookup">
+        <span>â–¥</span> Barcode Lookup
+      </a>
 
-    <a class="nav-item" routerLink="/rack-stock-management" routerLinkActive="active">
-      <span>&#9636;</span> Rack &amp; Stock
-    </a>
-  </nav>
+      <a class="nav-item">
+        <span>â–¤</span> Subcategories
+      </a>
 
-  <div class="sidebar-bottom">
-    <div class="sidebar-message">
-      <span class="message-icon">&#10022;</span>
-      <h3>Build Better.</h3>
-      <p>Manage Smarter.</p>
+      <a class="nav-item">
+        <span>â–£</span> Inventory
+      </a>
+
+      <a class="nav-item">
+        <span>🛒</span> Sales (POS)
+      </a>
+
+      <a class="nav-item">
+        <span>â™§</span> Suppliers
+      </a>
+
+      <a class="nav-item">
+        <span>âš’</span> Repairs
+      </a>
+
+      <a class="nav-item">
+        <span>â–¥</span> Reports
+      </a>
+
+      <a class="nav-item">
+        <span>âš™</span> Settings
+      </a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="sidebar-message">
+        <span class="message-icon">✦</span>
+        <h3>Build Better.</h3>
+        <p>Manage Smarter.</p>
+      </div>
+      <span class="version">PVE-BMS Â· Frontend Demo</span>
     </div>
-    <span class="version">PVE-BMS | Frontend Demo</span>
-  </div>
-</aside><main class="main-content"><div class="page">
+  </aside><main class="main-content"><div class="page">
   <div class="page-header">
     <div>
       <h1>Product Management</h1>

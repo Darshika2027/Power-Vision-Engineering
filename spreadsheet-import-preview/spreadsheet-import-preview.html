@@ -1,0 +1,1299 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PVE-BMS | Spreadsheet Import Preview</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f7fc;
+    color: #172554;
+}
+
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* SIDEBAR */
+.sidebar {
+    width: 245px;
+    min-width: 245px;
+    min-height: 100vh;
+    padding: 25px 17px;
+    background: #091b3d;
+    color: white;
+    display: flex;
+    flex-direction: column;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 0 5px 30px;
+}
+
+.brand-logo {
+    width: 43px;
+    height: 43px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1688f5, #6550e9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+    font-weight: bold;
+    color: white;
+}
+
+.brand h2 {
+    font-size: 17px;
+    color: white;
+}
+
+.brand p {
+    font-size: 10px;
+    color: #9aabc9;
+    margin-top: 4px;
+}
+
+.menu-label {
+    color: #7185a8;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    font-weight: bold;
+    padding: 0 12px;
+    margin-bottom: 12px;
+}
+
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 12px;
+    border-radius: 9px;
+    color: #aebbd2;
+    text-decoration: none;
+    font-size: 12px;
+    transition: 0.2s;
+}
+
+.nav-item:hover {
+    background: #ffffff12;
+    color: white;
+}
+
+.nav-item.active {
+    background: linear-gradient(100deg, #176fe4, #5149d9);
+    color: white;
+    font-weight: bold;
+}
+
+.nav-icon {
+    width: 19px;
+    text-align: center;
+    font-size: 16px;
+}
+
+.sidebar-bottom {
+    margin-top: auto;
+    padding-top: 25px;
+}
+
+.sidebar-message {
+    background: #ffffff0c;
+    border: 1px solid #ffffff15;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 18px;
+}
+
+.sidebar-message strong {
+    color: #65baff;
+    font-size: 12px;
+}
+
+.sidebar-message p {
+    color: #aebbd2;
+    font-size: 11px;
+    line-height: 1.6;
+    margin-top: 7px;
+}
+
+.sidebar-version {
+    color: #7185a8;
+    font-size: 10px;
+    text-align: center;
+}
+
+/* MAIN CONTENT */
+.main-content {
+    flex: 1;
+    min-width: 0;
+    padding: 0 30px;
+}
+
+.page {
+    min-height: 100vh;
+    padding: 32px 0;
+    background: #f8fafc;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.page-header h1 {
+    font-size: 30px;
+    color: #172554;
+    margin-bottom: 9px;
+}
+
+.page-header p {
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.breadcrumb {
+    color: #64748b;
+    font-size: 12px;
+    margin-bottom: 13px;
+}
+
+.breadcrumb span {
+    color: #1d4ed8;
+    font-weight: bold;
+}
+
+.page-tag {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    padding: 10px 15px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* STATISTICS */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+    margin-top: 25px;
+}
+
+.stat-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 13px;
+    padding: 23px;
+    box-shadow: 0 2px 7px #0f172a08;
+}
+
+.stat-label {
+    color: #64748b;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.stat-value {
+    color: #1d4ed8;
+    font-size: 27px;
+    font-weight: bold;
+}
+
+.stat-value.green {
+    color: #15803d;
+}
+
+.stat-value.red {
+    color: #dc2626;
+}
+
+.stat-note {
+    color: #94a3b8;
+    font-size: 11px;
+    margin-top: 9px;
+}
+
+/* CARDS */
+.form-card,
+.table-card {
+    background: white;
+    padding: 28px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    margin-top: 24px;
+    box-shadow: 0 2px 7px #0f172a08;
+}
+
+.card-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.card-heading h2 {
+    font-size: 19px;
+    color: #172554;
+}
+
+.card-heading p {
+    color: #64748b;
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+/* UPLOAD AREA */
+.upload-area {
+    border: 2px dashed #bfdbfe;
+    border-radius: 12px;
+    padding: 35px 20px;
+    background: #f8fbff;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s;
+    display: block;
+}
+
+.upload-area:hover {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+.upload-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 13px;
+    border-radius: 12px;
+    background: #dbeafe;
+    color: #1d4ed8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 25px;
+}
+
+.upload-area strong {
+    display: block;
+    font-size: 15px;
+    color: #172554;
+    margin-bottom: 8px;
+}
+
+.upload-area span {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.upload-area input {
+    display: none;
+}
+
+.file-info {
+    display: none;
+    padding: 13px 16px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 9px;
+    margin-top: 15px;
+    color: #1d4ed8;
+    font-size: 13px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.file-info.show {
+    display: flex;
+}
+
+/* BUTTONS */
+.button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+button {
+    border: none;
+    border-radius: 8px;
+    padding: 11px 17px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.primary {
+    background: #1d4ed8;
+    color: white;
+}
+
+.primary:hover {
+    background: #1e40af;
+}
+
+.secondary {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.secondary:hover {
+    background: #cbd5e1;
+}
+
+.danger-button {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* MESSAGES */
+.message {
+    display: none;
+    padding: 13px 16px;
+    border-radius: 9px;
+    font-size: 13px;
+    margin-top: 16px;
+}
+
+.message.show {
+    display: block;
+}
+
+.message.success {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #86efac;
+}
+
+.message.error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+/* TABLE TOOLS */
+.table-tools {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.search-input,
+.filter-select {
+    padding: 11px 13px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    outline: none;
+    font-size: 12px;
+    background: white;
+    color: #334155;
+}
+
+.search-input {
+    width: 260px;
+    max-width: 100%;
+}
+
+.search-input:focus,
+.filter-select:focus {
+    border-color: #2563eb;
+}
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 850px;
+}
+
+thead {
+    background: #f1f5f9;
+}
+
+th {
+    padding: 14px 13px;
+    color: #475569;
+    font-size: 11px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+td {
+    padding: 14px 13px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+    font-size: 12px;
+}
+
+tbody tr:hover {
+    background: #f8fafc;
+}
+
+.status {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.status.valid {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status.invalid {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status.duplicate {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 35px;
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+.table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.pagination {
+    display: flex;
+    gap: 7px;
+}
+
+.pagination button {
+    padding: 8px 12px;
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.pagination button.current {
+    background: #1d4ed8;
+    color: white;
+}
+
+/* MODAL */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #0f172a80;
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.modal {
+    background: white;
+    border-radius: 14px;
+    padding: 27px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 15px 45px #0002;
+}
+
+.modal h2 {
+    color: #172554;
+    font-size: 19px;
+    margin-bottom: 12px;
+}
+
+.modal p {
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+/* RESPONSIVE - KEEP SIDEBAR MENU VISIBLE */
+@media (max-width: 1000px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sidebar {
+        width: 220px;
+        min-width: 220px;
+    }
+
+    .main-content {
+        padding: 0 20px;
+    }
+}
+
+@media (max-width: 650px) {
+    .app-layout {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        min-width: 100%;
+        min-height: auto;
+        padding: 18px;
+    }
+
+    .brand {
+        padding-bottom: 18px;
+    }
+
+    .nav-menu {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar-bottom {
+        margin-top: 18px;
+        padding-top: 0;
+    }
+
+    .main-content {
+        padding: 0 15px;
+    }
+
+    .page {
+        padding-top: 23px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .stat-card {
+        padding: 15px;
+    }
+
+    .stat-value {
+        font-size: 22px;
+    }
+
+    .form-card,
+    .table-card {
+        padding: 18px;
+    }
+
+    .page-header h1 {
+        font-size: 24px;
+    }
+
+    .search-input {
+        width: 100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app-layout">
+
+    <!-- SIDEBAR: ALL MENU ITEMS REMAIN VISIBLE -->
+    <aside class="sidebar">
+
+        <div class="brand">
+            <div class="brand-logo">P</div>
+            <div>
+                <h2>PVE-BMS</h2>
+                <p>Business Management</p>
+            </div>
+        </div>
+
+        <div class="menu-label">MAIN MENU</div>
+
+        <nav class="nav-menu">
+            <a href="http://localhost:4200/" class="nav-item">
+                <span class="nav-icon">▦</span> Dashboard
+            </a>
+
+            <a href="http://localhost:4200/products" class="nav-item">
+                <span class="nav-icon">▣</span> Products
+            </a>
+
+            <a href="http://localhost:4200/" class="nav-item">
+                <span class="nav-icon">▤</span> Categories
+            </a>
+
+            <a href="http://localhost:4200/product-lookup" class="nav-item">
+                <span class="nav-icon">⌕</span> Barcode Lookup
+            </a>
+
+            <a href="#" class="nav-item">
+                <span class="nav-icon">▧</span> Subcategories
+            </a>
+
+            <a href="#" class="nav-item">
+                <span class="nav-icon">▥</span> Inventory
+            </a>
+
+            <a href="#" class="nav-item">
+                <span class="nav-icon">🛒</span> Sales (POS)
+            </a>
+
+            <a href="#" class="nav-item">
+                <span class="nav-icon">♧</span> Suppliers
+            </a>
+
+            <a href="#" class="nav-item">
+                <span class="nav-icon">🔧</span> Repairs
+            </a>
+
+            <a href="#" class="nav-item">
+                <span class="nav-icon">▤</span> Reports
+            </a>
+
+            <a href="#" class="nav-item">
+                <span class="nav-icon">⚙</span> Settings
+            </a>
+
+            <a href="#" class="nav-item active">
+                <span class="nav-icon">⇧</span> Spreadsheet Import
+            </a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="sidebar-message">
+                <strong>✦ Build Better. Manage Smarter.</strong>
+                <p>Manage your business operations efficiently with PVE-BMS.</p>
+            </div>
+            <div class="sidebar-version">PVE-BMS · Frontend Demo</div>
+        </div>
+
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <div class="page">
+
+            <div class="breadcrumb">
+                Products / Bulk Import / <span>Spreadsheet Preview</span>
+            </div>
+
+            <div class="page-header">
+                <div>
+                    <h1>Spreadsheet Import Preview</h1>
+                    <p>Upload, validate and review your product spreadsheet before importing.</p>
+                </div>
+                <div class="page-tag">PRODUCT MANAGEMENT</div>
+            </div>
+
+            <!-- STATISTICS -->
+            <section class="stats-grid">
+
+                <div class="stat-card">
+                    <div class="stat-label">Total Records</div>
+                    <div class="stat-value" id="totalCount">0</div>
+                    <div class="stat-note">Uploaded spreadsheet rows</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Valid Records</div>
+                    <div class="stat-value green" id="validCount">0</div>
+                    <div class="stat-note">Ready for review</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Invalid Records</div>
+                    <div class="stat-value red" id="invalidCount">0</div>
+                    <div class="stat-note">Require correction</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Duplicate Records</div>
+                    <div class="stat-value" id="duplicateCount">0</div>
+                    <div class="stat-note">Repeated SKU or barcode</div>
+                </div>
+
+            </section>
+
+            <!-- UPLOAD CARD -->
+            <section class="form-card">
+
+                <div class="card-heading">
+                    <div>
+                        <h2>Upload Product Spreadsheet</h2>
+                        <p>Select an Excel or CSV file to preview product records.</p>
+                    </div>
+                </div>
+
+                <label class="upload-area" for="fileInput">
+                    <div class="upload-icon">↑</div>
+                    <strong>Select your Excel or CSV file</strong>
+                    <span>Click to browse or choose a file from your computer</span>
+                    <span style="display:block;margin-top:8px">
+                        Supported formats: .xlsx, .xls, .csv
+                    </span>
+                    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+                </label>
+
+                <div class="file-info" id="fileInfo">
+                    <span id="fileName">No file selected</span>
+                    <span id="fileSize"></span>
+                </div>
+
+                <div class="button-row">
+                    <button class="primary" id="templateButton">Download Template</button>
+                    <button class="secondary" id="clearButton">Clear Preview</button>
+                </div>
+
+                <div class="message success" id="successMessage"></div>
+                <div class="message error" id="errorMessage"></div>
+
+            </section>
+
+            <!-- PREVIEW TABLE -->
+            <section class="table-card">
+
+                <div class="card-heading">
+                    <div>
+                        <h2>Product Data Preview</h2>
+                        <p>Review spreadsheet records and validation results.</p>
+                    </div>
+                    <button class="primary" id="exportErrorsButton" disabled>
+                        Export Errors
+                    </button>
+                </div>
+
+                <div class="table-tools">
+                    <input
+                        type="text"
+                        class="search-input"
+                        id="searchInput"
+                        placeholder="Search SKU, product name or barcode..."
+                    >
+
+                    <select class="filter-select" id="statusFilter">
+                        <option value="all">All Records</option>
+                        <option value="Valid">Valid</option>
+                        <option value="Invalid">Invalid</option>
+                        <option value="Duplicate">Duplicate</option>
+                    </select>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ROW</th>
+                                <th>SKU</th>
+                                <th>PRODUCT NAME</th>
+                                <th>BARCODE</th>
+                                <th>COST PRICE</th>
+                                <th>SELLING PRICE</th>
+                                <th>CATEGORY</th>
+                                <th>STATUS</th>
+                                <th>REMARKS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="previewBody">
+                            <tr>
+                                <td colspan="9" class="empty-state">
+                                    Upload a spreadsheet to view product records.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-footer">
+                    <span id="resultInfo">Showing 0 records</span>
+                    <div class="pagination" id="pagination"></div>
+                </div>
+
+                <div class="button-row">
+                    <button class="primary" id="reviewButton" disabled>
+                        Review Import
+                    </button>
+                    <button class="secondary" id="exportAllButton" disabled>
+                        Export Preview
+                    </button>
+                </div>
+
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<!-- REVIEW MODAL -->
+<div class="modal-overlay" id="reviewModal">
+    <div class="modal">
+        <h2>Review Import</h2>
+        <p id="reviewText">
+            Please review the spreadsheet records before continuing.
+        </p>
+        <div class="modal-actions">
+            <button class="secondary" id="cancelReview">Cancel</button>
+            <button class="primary" id="confirmReview">Confirm Review</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const fileInput = document.getElementById("fileInput");
+const previewBody = document.getElementById("previewBody");
+const searchInput = document.getElementById("searchInput");
+const statusFilter = document.getElementById("statusFilter");
+
+let records = [];
+let currentPage = 1;
+const pageSize = 10;
+
+function showMessage(type, message) {
+    const success = document.getElementById("successMessage");
+    const error = document.getElementById("errorMessage");
+
+    success.classList.remove("show");
+    error.classList.remove("show");
+
+    const target = type === "success" ? success : error;
+    target.textContent = message;
+    target.classList.add("show");
+}
+
+function clearMessages() {
+    document.getElementById("successMessage").classList.remove("show");
+    document.getElementById("errorMessage").classList.remove("show");
+}
+
+function normalise(value) {
+    return String(value ?? "").trim();
+}
+
+function normaliseHeader(value) {
+    return String(value ?? "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
+}
+
+function getValue(row, possibleNames) {
+    const keys = Object.keys(row);
+
+    for (const name of possibleNames) {
+        const wanted = normaliseHeader(name);
+        const matched = keys.find(key => normaliseHeader(key) === wanted);
+
+        if (matched !== undefined) {
+            return row[matched];
+        }
+    }
+
+    return "";
+}
+
+function validateRows(rows) {
+    const skuCounts = {};
+    const barcodeCounts = {};
+
+    rows.forEach(row => {
+        const sku = normalise(row.sku).toLowerCase();
+        const barcode = normalise(row.barcode).toLowerCase();
+
+        if (sku) skuCounts[sku] = (skuCounts[sku] || 0) + 1;
+        if (barcode) barcodeCounts[barcode] = (barcodeCounts[barcode] || 0) + 1;
+    });
+
+    return rows.map((row, index) => {
+        const errors = [];
+
+        const sku = normalise(row.sku);
+        const name = normalise(row.name);
+        const barcode = normalise(row.barcode);
+        const cost = Number(row.costPrice);
+        const selling = Number(row.sellingPrice);
+
+        if (!sku) errors.push("SKU required");
+        if (!name) errors.push("Product name required");
+        if (!barcode) errors.push("Barcode required");
+
+        if (normalise(row.costPrice) === "" || !Number.isFinite(cost) || cost < 0) {
+            errors.push("Invalid cost price");
+        }
+
+        if (normalise(row.sellingPrice) === "" || !Number.isFinite(selling) || selling < 0) {
+            errors.push("Invalid selling price");
+        }
+
+        const duplicate =
+            (sku && skuCounts[sku.toLowerCase()] > 1) ||
+            (barcode && barcodeCounts[barcode.toLowerCase()] > 1);
+
+        let status = "Valid";
+
+        if (duplicate) {
+            status = "Duplicate";
+            errors.push("Repeated SKU or barcode");
+        } else if (errors.length > 0) {
+            status = "Invalid";
+        }
+
+        return {
+            ...row,
+            rowNumber: index + 2,
+            status,
+            remarks: errors.join(", ")
+        };
+    });
+}
+
+function updateCounts() {
+    document.getElementById("totalCount").textContent = records.length;
+    document.getElementById("validCount").textContent =
+        records.filter(r => r.status === "Valid").length;
+    document.getElementById("invalidCount").textContent =
+        records.filter(r => r.status === "Invalid").length;
+    document.getElementById("duplicateCount").textContent =
+        records.filter(r => r.status === "Duplicate").length;
+
+    document.getElementById("reviewButton").disabled = records.length === 0;
+    document.getElementById("exportAllButton").disabled = records.length === 0;
+
+    document.getElementById("exportErrorsButton").disabled =
+        !records.some(r => r.status !== "Valid");
+}
+
+function getFilteredRecords() {
+    const search = searchInput.value.toLowerCase().trim();
+    const filter = statusFilter.value;
+
+    return records.filter(row => {
+        const matchesSearch = [
+            row.sku,
+            row.name,
+            row.barcode,
+            row.category
+        ].some(value => normalise(value).toLowerCase().includes(search));
+
+        const matchesStatus = filter === "all" || row.status === filter;
+
+        return matchesSearch && matchesStatus;
+    });
+}
+
+function renderTable() {
+    const filtered = getFilteredRecords();
+    const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    const start = (currentPage - 1) * pageSize;
+    const pageRecords = filtered.slice(start, start + pageSize);
+
+    previewBody.innerHTML = "";
+
+    if (pageRecords.length === 0) {
+        previewBody.innerHTML = `
+            <tr>
+                <td colspan="9" class="empty-state">
+                    No records found.
+                </td>
+            </tr>
+        `;
+    } else {
+        pageRecords.forEach(row => {
+            const tr = document.createElement("tr");
+
+            const values = [
+                row.rowNumber,
+                row.sku,
+                row.name,
+                row.barcode,
+                row.costPrice,
+                row.sellingPrice,
+                row.category
+            ];
+
+            values.forEach(value => {
+                const td = document.createElement("td");
+                td.textContent = normalise(value) || "-";
+                tr.appendChild(td);
+            });
+
+            const statusCell = document.createElement("td");
+            const badge = document.createElement("span");
+            badge.className = "status " + row.status.toLowerCase();
+            badge.textContent = row.status;
+            statusCell.appendChild(badge);
+            tr.appendChild(statusCell);
+
+            const remarksCell = document.createElement("td");
+            remarksCell.textContent = row.remarks || "-";
+            tr.appendChild(remarksCell);
+
+            previewBody.appendChild(tr);
+        });
+    }
+
+    document.getElementById("resultInfo").textContent =
+        `Showing ${filtered.length === 0 ? 0 : start + 1}–${Math.min(start + pageSize, filtered.length)} of ${filtered.length} records`;
+
+    renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+    const container = document.getElementById("pagination");
+    container.innerHTML = "";
+
+    if (records.length === 0) return;
+
+    const previous = document.createElement("button");
+    previous.textContent = "‹";
+    previous.disabled = currentPage === 1;
+    previous.addEventListener("click", () => {
+        currentPage--;
+        renderTable();
+    });
+    container.appendChild(previous);
+
+    const page = document.createElement("button");
+    page.textContent = currentPage;
+    page.className = "current";
+    container.appendChild(page);
+
+    const next = document.createElement("button");
+    next.textContent = "›";
+    next.disabled = currentPage >= totalPages;
+    next.addEventListener("click", () => {
+        currentPage++;
+        renderTable();
+    });
+    container.appendChild(next);
+}
+
+async function readFile(file) {
+    clearMessages();
+
+    if (!file) return;
+
+    if (!/\.(xlsx|xls|csv)$/i.test(file.name)) {
+        showMessage("error", "Please select an XLSX, XLS or CSV file.");
+        return;
+    }
+
+    if (typeof XLSX === "undefined") {
+        showMessage("error", "Spreadsheet library could not load. Check your internet connection.");
+        return;
+    }
+
+    try {
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type: "array" });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+
+        const rawRows = XLSX.utils.sheet_to_json(firstSheet, {
+            defval: "",
+            raw: false
+        });
+
+        if (rawRows.length === 0) {
+            showMessage("error", "The selected spreadsheet does not contain product records.");
+            return;
+        }
+
+        const mappedRows = rawRows.map(row => ({
+            sku: getValue(row, ["SKU", "Product SKU"]),
+            name: getValue(row, ["Name", "Product Name"]),
+            barcode: getValue(row, ["Barcode", "Bar Code"]),
+            description: getValue(row, ["Description", "Product Description"]),
+            costPrice: getValue(row, ["Cost Price", "CostPrice", "Cost"]),
+            sellingPrice: getValue(row, ["Selling Price", "SellingPrice", "Price"]),
+            category: getValue(row, ["Category", "Category Name"])
+        }));
+
+        records = validateRows(mappedRows);
+        currentPage = 1;
+
+        document.getElementById("fileName").textContent = file.name;
+        document.getElementById("fileSize").textContent =
+            (file.size / 1024).toFixed(2) + " KB";
+        document.getElementById("fileInfo").classList.add("show");
+
+        updateCounts();
+        renderTable();
+
+        showMessage("success", "Spreadsheet loaded successfully. Please review the validation results.");
+
+    } catch (error) {
+        console.error(error);
+        showMessage("error", "Unable to read this spreadsheet. Please check the file format.");
+    }
+}
+
+fileInput.addEventListener("change", event => {
+    readFile(event.target.files[0]);
+});
+
+searchInput.addEventListener("input", () => {
+    currentPage = 1;
+    renderTable();
+});
+
+statusFilter.addEventListener("change", () => {
+    currentPage = 1;
+    renderTable();
+});
+
+document.getElementById("templateButton").addEventListener("click", () => {
+    const template = [{
+        SKU: "PVE-001",
+        "Product Name": "Electrical Wire",
+        Barcode: "1234567890",
+        Description: "Sample product description",
+        "Cost Price": 1500,
+        "Selling Price": 2000,
+        Category: "Electrical Accessories"
+    }];
+
+    const worksheet = XLSX.utils.json_to_sheet(template);
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Products");
+    XLSX.writeFile(workbook, "PVE_Product_Import_Template.xlsx");
+});
+
+document.getElementById("clearButton").addEventListener("click", () => {
+    records = [];
+    currentPage = 1;
+    fileInput.value = "";
+    searchInput.value = "";
+    statusFilter.value = "all";
+
+    document.getElementById("fileInfo").classList.remove("show");
+    updateCounts();
+    renderTable();
+    clearMessages();
+
+    showMessage("success", "Preview cleared successfully.");
+});
+
+function exportRows(rows, filename) {
+    if (!rows.length) {
+        showMessage("error", "There are no records to export.");
+        return;
+    }
+
+    const exportData = rows.map(row => ({
+        "Row Number": row.rowNumber,
+        SKU: row.sku,
+        "Product Name": row.name,
+        Barcode: row.barcode,
+        Description: row.description,
+        "Cost Price": row.costPrice,
+        "Selling Price": row.sellingPrice,
+        Category: row.category,
+        Status: row.status,
+        Remarks: row.remarks
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Preview");
+    XLSX.writeFile(workbook, filename);
+}
+
+document.getElementById("exportAllButton").addEventListener("click", () => {
+    exportRows(records, "PVE_Product_Preview.xlsx");
+});
+
+document.getElementById("exportErrorsButton").addEventListener("click", () => {
+    exportRows(
+        records.filter(row => row.status !== "Valid"),
+        "PVE_Product_Import_Errors.xlsx"
+    );
+});
+
+const modal = document.getElementById("reviewModal");
+
+document.getElementById("reviewButton").addEventListener("click", () => {
+    const valid = records.filter(r => r.status === "Valid").length;
+    const invalid = records.filter(r => r.status === "Invalid").length;
+    const duplicate = records.filter(r => r.status === "Duplicate").length;
+
+    document.getElementById("reviewText").textContent =
+        `Total: ${records.length} | Valid: ${valid} | Invalid: ${invalid} | Duplicate: ${duplicate}. This is a preview review only. No products will be saved to the database.`;
+
+    modal.classList.add("show");
+});
+
+document.getElementById("cancelReview").addEventListener("click", () => {
+    modal.classList.remove("show");
+});
+
+document.getElementById("confirmReview").addEventListener("click", () => {
+    modal.classList.remove("show");
+    showMessage("success", "Review completed. This preview page does not yet import records into the database.");
+});
+
+updateCounts();
+renderTable();
+</script>
+
+</body>
+</html>

@@ -19,7 +19,7 @@
       </a>
 
       <a class="nav-item" routerLink="/products">
-        <span>â–£</span> Products
+        <span>&#9635;</span> Products
       </a>
 
       <a class="nav-item" routerLink="/">
@@ -27,15 +27,15 @@
       </a>
 
       <a class="nav-item" routerLink="/product-lookup">
-        <span>â–¥</span> Barcode Lookup
+        <span>&#9637;</span> Barcode Lookup
       </a>
 
       <a class="nav-item">
-        <span>â–¤</span> Subcategories
+        <span>&#9636;</span> Subcategories
       </a>
 
       <a class="nav-item">
-        <span>â–£</span> Inventory
+        <span>&#9635;</span> Inventory
       </a>
 
       <a class="nav-item">
@@ -43,19 +43,19 @@
       </a>
 
       <a class="nav-item">
-        <span>â™§</span> Suppliers
+        <span>&#9831;</span> Suppliers
       </a>
 
       <a class="nav-item">
-        <span>âš’</span> Repairs
+        <span>&#9874;</span> Repairs
       </a>
 
       <a class="nav-item">
-        <span>â–¥</span> Reports
+        <span>&#9637;</span> Reports
       </a>
 
       <a class="nav-item">
-        <span>âš™</span> Settings
+        <span>&#9881;</span> Settings
       </a>
     </nav>
 
@@ -65,7 +65,7 @@
         <h3>Build Better.</h3>
         <p>Manage Smarter.</p>
       </div>
-      <span class="version">PVE-BMS Â· Frontend Demo</span>
+      <span class="version">PVE-BMS &#183; Frontend Demo</span>
     </div>
   </aside>
 
@@ -84,7 +84,7 @@
           <span class="online-dot"></span>
           System Online
         </div>
-        <button class="notification-btn" type="button">â™§</button>
+        <button class="notification-btn" type="button">&#9831;</button>
         <div class="profile">
           <div class="avatar">A</div>
           <div>
@@ -200,7 +200,7 @@
             type="button"
             [class.selected]="viewMode === 'list'"
             (click)="viewMode = 'list'">
-            â˜· List
+            &#9783; List
           </button>
         </div>
       </div>
@@ -232,14 +232,14 @@
           </div>
 
           <div class="category-meta">
-            <span>â–£ {{ category.productCount }} Products</span>
+            <span>&#9635; {{ category.productCount }} Products</span>
             <span *ngIf="category.parentId">Subcategory</span>
             <span *ngIf="!category.parentId">Main Category</span>
           </div>
 
           <div class="card-footer">
             <button class="text-action" (click)="viewDetails(category)">
-              View Details â†’
+              View Details &#8594;
             </button>
 
             <div class="card-actions">
@@ -251,7 +251,7 @@
               <button
                 class="icon-action status-action"
                 title="Change status"
-                (click)="toggleStatus(category)">âŸ³</button>
+                (click)="toggleStatus(category)">&#10227;</button>
 
               <button
                 class="icon-action delete-action"
@@ -351,8 +351,8 @@
     </section>
 
     <footer class="page-footer">
-      <span>Â© 2026 Power Vision Engineering</span>
-      <span>PVE-BMS Â· Business Management System</span>
+      <span>&#169; 2026 Power Vision Engineering</span>
+      <span>PVE-BMS &#183; Business Management System</span>
     </footer>
 
   </main>

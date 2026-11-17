@@ -1,7 +1,6 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import { ProductService } from '../../services/product';
 import {
@@ -22,7 +21,7 @@ interface ProductOption {
 @Component({
   selector: 'app-rack-stock-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, FormsModule],
   templateUrl: './rack-stock-management.html',
   styleUrl: './rack-stock-management.css'
 })

@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { timeout } from 'rxjs';
 
 interface Product {
   id: number;
@@ -22,7 +22,7 @@ interface Product {
 @Component({
   selector: 'app-product-barcode-lookup',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, FormsModule],
   templateUrl: './product-barcode-lookup.html',
   styleUrl: './product-barcode-lookup.css'
 })
@@ -62,7 +62,9 @@ export class ProductBarcodeLookup {
 
     const url = `${this.apiUrl}/barcode/${encodeURIComponent(enteredBarcode)}`;
 
-    this.http.get<Product>(url).subscribe({
+    this.http.get<Product>(url).pipe(
+      timeout({ first: 10000 })
+    ).subscribe({
       next: (foundProduct) => {
         if (!foundProduct.active) {
           this.errorMessage = 'This product is currently inactive.';
@@ -107,5 +109,4 @@ export class ProductBarcodeLookup {
       maximumFractionDigits: 2
     });
   }
-
 }

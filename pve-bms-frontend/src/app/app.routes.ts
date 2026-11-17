@@ -1,35 +1,40 @@
-﻿import { Routes } from '@angular/router';
-import { CategoryList } from './components/category-list/category-list';
-import { ProductList } from './components/product-list/product-list';
-import { ProductBarcodeLookup } from './components/product-barcode-lookup/product-barcode-lookup';
-import { GoodsReceiving } from './components/goods-receiving/goods-receiving';
-import { RackStockManagement } from './components/rack-stock-management/rack-stock-management';
-import { BulkProductImport } from './components/bulk-product-import/bulk-product-import';
+import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   {
     path: '',
-    component: CategoryList
+    loadComponent: () =>
+      import('./components/category-list/category-list')
+        .then(m => m.CategoryList)
   },
   {
     path: 'products',
-    component: ProductList
+    loadComponent: () =>
+      import('./components/product-list/product-list')
+        .then(m => m.ProductList)
   },
   {
     path: 'product-lookup',
-    component: ProductBarcodeLookup
+    loadComponent: () =>
+      import('./components/product-barcode-lookup/product-barcode-lookup')
+        .then(m => m.ProductBarcodeLookup)
   },
   {
     path: 'goods-receiving',
-    component: GoodsReceiving
+    loadComponent: () =>
+      import('./components/goods-receiving/goods-receiving')
+        .then(m => m.GoodsReceiving)
   },
   {
     path: 'rack-stock-management',
-    component: RackStockManagement
-  }
-,
+    loadComponent: () =>
+      import('./components/rack-stock-management/rack-stock-management')
+        .then(m => m.RackStockManagement)
+  },
   {
     path: 'bulk-product-import',
-    component: BulkProductImport
+    loadComponent: () =>
+      import('./components/bulk-product-import/bulk-product-import')
+        .then(m => m.BulkProductImport)
   }
 ];

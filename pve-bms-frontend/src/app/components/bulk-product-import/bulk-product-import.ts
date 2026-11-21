@@ -1,8 +1,7 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { firstValueFrom, forkJoin } from 'rxjs';
-import * as XLSX from 'xlsx';
 
 interface Category {
   id: number;
@@ -15,6 +14,8 @@ interface ExistingProduct {
   barcode?: string;
 }
 
+type RowStatus = 'Valid' | 'Invalid' | 'Duplicate' | 'Imported' | 'Failed';
+
 interface ImportRow {
   rowNumber: number;
   sku: string;
@@ -23,12 +24,11 @@ interface ImportRow {
   categoryId: number | null;
   barcode: string;
   description: string;
-  costPrice: number;
-  sellingPrice: number;
+  costPrice: number | null;
+  sellingPrice: number | null;
   active: boolean;
-  status: 'Valid' | 'Invalid' | 'Duplicate' | 'Imported' | 'Failed';
+  status: RowStatus;
   issues: string[];
-  error?: string;
 }
 
 @Component({
@@ -52,7 +52,7 @@ export class BulkProductImport implements OnInit {
 
   loading = false;
   importing = false;
-  dataLoading = true;
+  dataLoading = false;
 
   errorMessage = '';
   successMessage = '';
@@ -61,7 +61,7 @@ export class BulkProductImport implements OnInit {
   failedCount = 0;
   currentImport = 0;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadMasterData();
@@ -87,37 +87,45 @@ export class BulkProductImport implements OnInit {
     return this.rows.filter(row => row.status === 'Imported').length;
   }
 
-  get failedRows(): ImportRow[] {
-    return this.rows.filter(row => row.status === 'Failed');
+  get failedRows(): number {
+    return this.rows.filter(row => row.status === 'Failed').length;
   }
 
   get importProgress(): number {
-    if (!this.totalRows) return 0;
-    return Math.round((this.currentImport / this.totalRows) * 100);
+    if (this.validCount + this.importedRows + this.failedRows === 0) {
+      return 0;
+    }
+
+    const total = this.validCount + this.importedRows + this.failedRows;
+
+    return Math.round(
+      ((this.importedRows + this.failedRows) / total) * 100
+    );
   }
 
   loadMasterData(): void {
     this.dataLoading = true;
+    this.errorMessage = '';
 
     forkJoin({
       categories: this.http.get<Category[]>(this.categoryUrl),
       products: this.http.get<ExistingProduct[]>(this.productUrl)
     }).subscribe({
       next: result => {
-        this.categories = result.categories || [];
-        this.existingProducts = result.products || [];
+        this.categories = result.categories ?? [];
+        this.existingProducts = result.products ?? [];
         this.dataLoading = false;
       },
-      error: error => {
-        console.error('Master data loading failed:', error);
+      error: () => {
         this.errorMessage =
-          'Unable to load products and categories. Check whether the backend is running.';
+          'Unable to load categories and existing products. Check the backend connection.';
         this.dataLoading = false;
       }
     });
   }
 
-  downloadTemplate(): void {
+  async downloadTemplate(): Promise<void> {
+    const XLSX = await import('xlsx');
     const headers = [
       'SKU',
       'Product Name',
@@ -132,12 +140,12 @@ export class BulkProductImport implements OnInit {
     const example = [
       'PVE-EXAMPLE-001',
       'Electrical Wire',
-      this.categories[0]?.name || 'Electrical Accessories',
-      '4791234567890',
-      'Copper electrical wire',
+      'Electrical Accessories',
+      '1234567890123',
+      'Example product description',
       1500,
       2000,
-      true
+      'Yes'
     ];
 
     const worksheet = XLSX.utils.aoa_to_sheet([
@@ -145,50 +153,38 @@ export class BulkProductImport implements OnInit {
       example
     ]);
 
-    worksheet['!cols'] = [
-      { wch: 22 },
-      { wch: 25 },
-      { wch: 25 },
-      { wch: 20 },
-      { wch: 35 },
-      { wch: 16 },
-      { wch: 16 },
-      { wch: 12 }
-    ];
-
-    const instructions = [
-      ['PVE-BMS - Bulk Product Import Template'],
-      ['Required fields: SKU, Product Name, Category, Cost Price, Selling Price'],
-      ['Barcode and Description are optional.'],
-      ['Active accepts TRUE or FALSE. If blank, TRUE is used.'],
-      ['Category must exactly match an existing category name.'],
-      ['Do not use an existing SKU or Barcode.'],
-      ['Do not change the column headings.'],
-      ['Delete the example row before importing your own products.']
-    ];
-
-    const instructionSheet = XLSX.utils.aoa_to_sheet(instructions);
-    instructionSheet['!cols'] = [{ wch: 100 }];
+    const instructions = XLSX.utils.aoa_to_sheet([
+      ['Bulk Product Import Instructions'],
+      ['SKU: Required unique product identifier.'],
+      ['Product Name: Required.'],
+      ['Category: Must match an existing category.'],
+      ['Barcode: Optional, but must be unique when provided.'],
+      ['Description: Optional.'],
+      ['Cost Price: Required positive number.'],
+      ['Selling Price: Required positive number.'],
+      ['Active: Yes/No, True/False, 1/0.'],
+      ['Existing products are not silently overwritten.'],
+      ['Review the preview and confirm before importing.']
+    ]);
 
     const workbook = XLSX.utils.book_new();
 
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Products');
-    XLSX.utils.book_append_sheet(workbook, instructionSheet, 'Instructions');
+    XLSX.utils.book_append_sheet(workbook, instructions, 'Instructions');
 
-    XLSX.writeFile(workbook, 'PVE-BMS-Product-Import-Template.xlsx');
+    XLSX.writeFile(workbook, 'PVE_Product_Import_Template.xlsx');
   }
 
   onFileSelected(event: Event): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
 
-    this.errorMessage = '';
-    this.successMessage = '';
-    this.rows = [];
-    this.selectedFile = null;
-    this.fileName = '';
-
-    if (!file) return;
+    if (!file) {
+      return;
+    }
 
     if (!file.name.toLowerCase().endsWith('.xlsx')) {
       this.errorMessage = 'Please select an Excel .xlsx file.';
@@ -210,51 +206,102 @@ export class BulkProductImport implements OnInit {
 
     this.selectedFile = file;
     this.fileName = file.name;
+
+    this.importedCount = 0;
+    this.failedCount = 0;
+    this.currentImport = 0;
+    this.rows = [];
+
     this.readExcelFile(file);
   }
 
-  async readExcelFile(file: File): Promise<void> {
+  private readExcelFile(file: File): void {
     this.loading = true;
 
-    try {
-      const buffer = await file.arrayBuffer();
-      const workbook = XLSX.read(buffer, { type: 'array' });
+    const reader = new FileReader();
 
-      const sheet = workbook.Sheets['Products'] ||
-        workbook.Sheets[workbook.SheetNames[0]];
+    reader.onload = async (event: ProgressEvent<FileReader>) => {
+      try {
+        const XLSX = await import('xlsx');
+        const data = event.target?.result;
 
-      if (!sheet) {
-        throw new Error('No worksheet found in the Excel file.');
+        if (!data) {
+          throw new Error('Unable to read the selected file.');
+        }
+
+        const workbook = XLSX.read(data, { type: 'array' });
+
+        const sheetName = workbook.SheetNames.includes('Products')
+          ? 'Products'
+          : workbook.SheetNames[0];
+
+        if (!sheetName) {
+          throw new Error('No worksheet found in the Excel file.');
+        }
+
+        const worksheet = workbook.Sheets[sheetName];
+
+        const records = XLSX.utils.sheet_to_json<Record<string, unknown>>(
+          worksheet,
+          { defval: '', raw: false }
+        );
+
+        if (records.length === 0) {
+          throw new Error('No product records found in the worksheet.');
+        }
+
+        if (records.length > 5000) {
+          throw new Error('Maximum allowed rows are 5000.');
+        }
+
+        const headers = Object.keys(records[0]).map(header =>
+          this.normalizeHeader(header)
+        );
+
+        const requiredHeaders = [
+          'sku',
+          'productname',
+          'category',
+          'costprice',
+          'sellingprice'
+        ];
+
+        const missingHeaders = requiredHeaders.filter(
+          header => !headers.includes(header)
+        );
+
+        if (missingHeaders.length > 0) {
+          throw new Error(
+            'Missing required columns: ' + missingHeaders.join(', ')
+          );
+        }
+
+        this.rows = records.map((record, index) =>
+          this.mapExcelRow(record, index + 2)
+        );
+
+        this.validateRows();
+
+        this.loading = false;
+        this.cdr.detectChanges();
+      } catch (error) {
+        this.loading = false;
+        this.cdr.detectChanges();
+        this.rows = [];
+
+        this.errorMessage = error instanceof Error
+          ? error.message
+          : 'Unable to process the Excel file.';
       }
+    };
 
-      const data = XLSX.utils.sheet_to_json<Record<string, unknown>>(
-        sheet,
-        { defval: '', raw: false }
-      );
-
-      if (!data.length) {
-        throw new Error('The Excel file does not contain product records.');
-      }
-
-      if (data.length > 5000) {
-        throw new Error('A maximum of 5,000 product rows is allowed per file.');
-      }
-
-      this.rows = data.map((record, index) =>
-        this.mapExcelRow(record, index + 2)
-      );
-
-      this.validateRows();
-
-    } catch (error) {
-      console.error(error);
-      this.rows = [];
-      this.errorMessage = error instanceof Error
-        ? error.message
-        : 'Unable to read the Excel file.';
-    } finally {
+    reader.onerror = () => {
       this.loading = false;
-    }
+        this.cdr.detectChanges();
+      this.errorMessage = 'Failed to read the selected file.';
+    };
+
+    reader.readAsArrayBuffer(file);
   }
 
   private normalizeHeader(value: string): string {
@@ -282,52 +329,111 @@ export class BulkProductImport implements OnInit {
     return '';
   }
 
-  private parsePrice(value: string): number {
-    const cleaned = value
-      .replace(/Rs\.?/gi, '')
-      .replace(/,/g, '')
-      .trim();
+  private parsePrice(value: string): number | null {
+    if (!value.trim()) {
+      return null;
+    }
 
-    return cleaned === '' ? NaN : Number(cleaned);
+    const cleaned = value.replace(/Rs\.?|,/gi, '').trim();
+
+    if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) {
+      return null;
+    }
+
+    const number = Number(cleaned);
+
+    return Number.isFinite(number) ? number : null;
+  }
+
+  private parseActive(value: string): {
+    value: boolean;
+    valid: boolean;
+  } {
+    const normalized = value.trim().toLowerCase();
+
+    if (!normalized) {
+      return { value: true, valid: true };
+    }
+
+    if (['true', '1', 'yes', 'active'].includes(normalized)) {
+      return { value: true, valid: true };
+    }
+
+    if (['false', '0', 'no', 'inactive'].includes(normalized)) {
+      return { value: false, valid: true };
+    }
+
+    return { value: true, valid: false };
   }
 
   private mapExcelRow(
     record: Record<string, unknown>,
     rowNumber: number
   ): ImportRow {
+    const sku = this.getValue(record, [
+      'SKU',
+      'Product ID',
+      'Product Code',
+      'Item Code'
+    ]);
 
-    const sku = this.getValue(record, ['SKU', 'Product SKU']);
-    const name = this.getValue(record, ['Product Name', 'Name']);
-    const categoryName = this.getValue(record, ['Category', 'Category Name']);
-    const barcode = this.getValue(record, ['Barcode', 'Bar Code']);
-    const description = this.getValue(record, ['Description']);
+    const name = this.getValue(record, [
+      'Product Name',
+      'Name',
+      'Item Name'
+    ]);
+
+    const categoryName = this.getValue(record, [
+      'Category',
+      'Category Name'
+    ]);
+
+    const barcode = this.getValue(record, [
+      'Barcode',
+      'Bar Code',
+      'EAN'
+    ]);
+
+    const description = this.getValue(record, [
+      'Description',
+      'Product Description'
+    ]);
+
     const costPrice = this.parsePrice(
-      this.getValue(record, ['Cost Price', 'CostPrice'])
+      this.getValue(record, ['Cost Price', 'Purchase Price'])
     );
+
     const sellingPrice = this.parsePrice(
-      this.getValue(record, ['Selling Price', 'SellingPrice'])
+      this.getValue(record, ['Selling Price', 'Sale Price'])
     );
 
-    const activeValue = this.getValue(record, ['Active', 'Status']);
+    const activeText = this.getValue(record, ['Active', 'Status']);
+    const active = this.parseActive(activeText);
 
-    return {
+    const category = this.categories.find(item =>
+      item.name.trim().toLowerCase() === categoryName.toLowerCase()
+    );
+
+    const row: ImportRow = {
       rowNumber,
       sku,
       name,
       categoryName,
-      categoryId: null,
+      categoryId: category?.id ?? null,
       barcode,
       description,
       costPrice,
       sellingPrice,
-      active: activeValue === ''
-        ? true
-        : !['false', '0', 'no', 'inactive'].includes(
-            activeValue.toLowerCase()
-          ),
-      status: 'Invalid',
+      active: active.value,
+      status: 'Valid',
       issues: []
     };
+
+    if (!active.valid) {
+      row.issues.push('Active must be Yes/No, True/False or 1/0.');
+    }
+
+    return row;
   }
 
   private validateRows(): void {
@@ -346,30 +452,31 @@ export class BulkProductImport implements OnInit {
         .filter(Boolean)
     );
 
-    for (const row of this.rows) {
-      row.issues = [];
-
-      if (!row.sku) row.issues.push('SKU is required.');
-      if (!row.name) row.issues.push('Product name is required.');
-      if (!row.categoryName) row.issues.push('Category is required.');
-
-      if (!Number.isFinite(row.costPrice) || row.costPrice <= 0) {
-        row.issues.push('Cost price must be greater than zero.');
-      }
-
-      if (!Number.isFinite(row.sellingPrice) || row.sellingPrice <= 0) {
-        row.issues.push('Selling price must be greater than zero.');
-      }
-
-      const category = this.categories.find(
-        item => item.name.trim().toLowerCase() ===
-          row.categoryName.trim().toLowerCase()
+    this.rows.forEach(row => {
+      row.issues = row.issues.filter(issue =>
+        issue.startsWith('Active must be')
       );
 
-      if (row.categoryName && !category) {
+      if (!row.sku) {
+        row.issues.push('SKU / Product ID is required.');
+      }
+
+      if (!row.name) {
+        row.issues.push('Product name is required.');
+      }
+
+      if (!row.categoryName) {
+        row.issues.push('Category is required.');
+      } else if (!row.categoryId) {
         row.issues.push('Category does not exist.');
-      } else if (category) {
-        row.categoryId = category.id;
+      }
+
+      if (row.costPrice === null || row.costPrice <= 0) {
+        row.issues.push('Cost price must be a positive number.');
+      }
+
+      if (row.sellingPrice === null || row.sellingPrice <= 0) {
+        row.issues.push('Selling price must be a positive number.');
       }
 
       const skuKey = row.sku.toLowerCase();
@@ -377,23 +484,26 @@ export class BulkProductImport implements OnInit {
 
       let duplicate = false;
 
-      if (skuKey && (
-        existingSkus.has(skuKey) || seenSkus.has(skuKey)
-      )) {
-        duplicate = true;
-        row.issues.push('Duplicate SKU.');
+      if (skuKey) {
+        if (existingSkus.has(skuKey) || seenSkus.has(skuKey)) {
+          row.issues.push('Duplicate SKU / Product ID.');
+          duplicate = true;
+        }
+
+        seenSkus.add(skuKey);
       }
 
-      if (barcodeKey && (
-        existingBarcodes.has(barcodeKey) ||
-        seenBarcodes.has(barcodeKey)
-      )) {
-        duplicate = true;
-        row.issues.push('Duplicate barcode.');
-      }
+      if (barcodeKey) {
+        if (
+          existingBarcodes.has(barcodeKey) ||
+          seenBarcodes.has(barcodeKey)
+        ) {
+          row.issues.push('Duplicate barcode.');
+          duplicate = true;
+        }
 
-      if (skuKey) seenSkus.add(skuKey);
-      if (barcodeKey) seenBarcodes.add(barcodeKey);
+        seenBarcodes.add(barcodeKey);
+      }
 
       if (duplicate) {
         row.status = 'Duplicate';
@@ -402,25 +512,35 @@ export class BulkProductImport implements OnInit {
       } else {
         row.status = 'Valid';
       }
-    }
+    });
   }
 
   async importProducts(): Promise<void> {
-    const validRows = this.rows.filter(row => row.status === 'Valid');
+    if (this.importing || this.validCount === 0) {
+      return;
+    }
 
-    if (!validRows.length) {
-      this.errorMessage = 'There are no valid products to import.';
+    const confirmed = window.confirm(
+      `Import ${this.validCount} valid new products? Existing products will not be overwritten.`
+    );
+
+    if (!confirmed) {
       return;
     }
 
     this.importing = true;
     this.errorMessage = '';
     this.successMessage = '';
+
     this.importedCount = 0;
     this.failedCount = 0;
     this.currentImport = 0;
 
+    const validRows = this.rows.filter(row => row.status === 'Valid');
+
     for (const row of validRows) {
+      this.currentImport++;
+
       const payload = {
         sku: row.sku,
         name: row.name,
@@ -430,7 +550,7 @@ export class BulkProductImport implements OnInit {
         sellingPrice: row.sellingPrice,
         active: row.active,
         category: {
-          id: Number(row.categoryId)
+          id: row.categoryId
         }
       };
 
@@ -441,39 +561,36 @@ export class BulkProductImport implements OnInit {
 
         row.status = 'Imported';
         this.importedCount++;
-
-      } catch (error: any) {
+      } catch {
         row.status = 'Failed';
-        row.error = error?.error?.message ||
-          error?.message ||
-          'Product import failed.';
+        row.issues.push(
+          'Import failed. Check the backend response and product data.'
+        );
         this.failedCount++;
       }
-
-      this.currentImport++;
     }
 
     this.importing = false;
 
-    if (this.failedCount === 0) {
-      this.successMessage =
-        `${this.importedCount} product(s) imported successfully.`;
-    } else {
-      this.errorMessage =
-        `${this.importedCount} imported successfully. ${this.failedCount} failed.`;
-    }
+    this.successMessage =
+      `${this.importedCount} product(s) imported successfully. ` +
+      `${this.failedCount} product(s) failed.`;
 
     this.loadMasterData();
   }
 
   clearFile(): void {
-    if (this.importing) return;
+    if (this.importing) {
+      return;
+    }
 
     this.selectedFile = null;
     this.fileName = '';
     this.rows = [];
+
     this.errorMessage = '';
     this.successMessage = '';
+
     this.importedCount = 0;
     this.failedCount = 0;
     this.currentImport = 0;

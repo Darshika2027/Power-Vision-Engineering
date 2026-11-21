@@ -1,5 +1,10 @@
-import { CommonModule } from '@angular/common';
-import { Component, ElementRef, ViewChild } from '@angular/core';
+﻿import { CommonModule } from '@angular/common';
+import {
+  Component,
+  ElementRef,
+  ViewChild,
+  ChangeDetectorRef
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { timeout } from 'rxjs';
@@ -13,10 +18,7 @@ interface Product {
   costPrice: number;
   sellingPrice: number;
   active: boolean;
-  category?: {
-    id: number;
-    name: string;
-  };
+  category?: { id: number; name: string };
 }
 
 @Component({
@@ -27,7 +29,6 @@ interface Product {
   styleUrl: './product-barcode-lookup.css'
 })
 export class ProductBarcodeLookup {
-
   @ViewChild('barcodeInput')
   barcodeInput!: ElementRef<HTMLInputElement>;
 
@@ -35,19 +36,19 @@ export class ProductBarcodeLookup {
 
   barcode = '';
   product: Product | null = null;
-
   loading = false;
   successMessage = '';
   errorMessage = '';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   searchProduct(): void {
     const enteredBarcode = this.barcode.trim();
 
-    if (this.loading) {
-      return;
-    }
+    if (this.loading) return;
 
     this.product = null;
     this.successMessage = '';
@@ -55,10 +56,12 @@ export class ProductBarcodeLookup {
 
     if (!enteredBarcode) {
       this.errorMessage = 'Please enter or scan a product barcode.';
+      this.cdr.markForCheck();
       return;
     }
 
     this.loading = true;
+    this.cdr.markForCheck();
 
     const url = `${this.apiUrl}/barcode/${encodeURIComponent(enteredBarcode)}`;
 
@@ -74,8 +77,8 @@ export class ProductBarcodeLookup {
         }
 
         this.loading = false;
+        this.cdr.markForCheck();
       },
-
       error: (error) => {
         console.error('Barcode lookup error:', error);
 
@@ -84,11 +87,11 @@ export class ProductBarcodeLookup {
         } else if (error.status === 400) {
           this.errorMessage = 'Invalid barcode. Please check and try again.';
         } else {
-          this.errorMessage =
-            'Unable to connect to the server. Please try again.';
+          this.errorMessage = 'Unable to connect to the server. Please try again.';
         }
 
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -100,6 +103,7 @@ export class ProductBarcodeLookup {
     this.errorMessage = '';
     this.loading = false;
 
+    this.cdr.markForCheck();
     this.barcodeInput?.nativeElement.focus();
   }
 

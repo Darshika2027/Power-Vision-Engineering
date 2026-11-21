@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../services/product';
 
@@ -21,7 +21,7 @@ interface ReceivingItem {
 })
 export class GoodsReceiving implements OnInit {
 
-  constructor(private productService: ProductService) {}
+  constructor(private productService: ProductService, private cdr: ChangeDetectorRef) {}
 
   // AVAILABLE PRODUCTS
   products: any[] = [];
@@ -63,12 +63,14 @@ export class GoodsReceiving implements OnInit {
           (product: any) => product.active === true
         );
         this.isLoadingProducts = false;
+        this.cdr.markForCheck();
       },
       error: (error) => {
         console.error('PRODUCT LOAD ERROR:', error);
         this.productLoadError =
           'Unable to load products. Please check the backend connection.';
         this.isLoadingProducts = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -204,5 +206,6 @@ export class GoodsReceiving implements OnInit {
     this.items = [this.createEmptyItem()];
     this.errorMessage = '';
     this.successMessage = '';
+    this.cdr.detectChanges();
   }
 }

@@ -1,0 +1,84 @@
+erDiagram
+    CUSTOMERS ||--o{ SALES : makes
+    CUSTOMERS ||--o{ PAYMENTS : makes
+    CUSTOMERS ||--o{ CREDIT_TRANSACTIONS : has
+
+    SALES ||--o{ SALE_ITEMS : contains
+    SALES ||--o{ PAYMENTS : receives
+    SALES ||--o{ CREDIT_TRANSACTIONS : generates
+    PAYMENTS ||--o{ CREDIT_TRANSACTIONS : records
+
+    PRODUCTS ||--o{ SALE_ITEMS : sold_as
+    PRODUCTS ||--o{ INVENTORY_MOVEMENTS : tracks
+    SALES ||--o{ INVENTORY_MOVEMENTS : tracks
+
+    RACK_INVENTORY ||--o{ INVENTORY_MOVEMENTS : records
+    SALE_ITEMS ||--o{ INVENTORY_MOVEMENTS : generates
+
+    CUSTOMERS {
+        bigint id PK
+        varchar name
+        varchar phone
+        varchar address
+        boolean credit_enabled
+        timestamp credit_approved_at
+        timestamp created_at
+    }
+
+    SALES {
+        bigint id PK
+        varchar invoice_no UK
+        bigint customer_id FK
+        varchar customer_name_snapshot
+        varchar customer_phone_snapshot
+        timestamp sold_at
+        varchar status
+        numeric subtotal
+        numeric discount_total
+        numeric grand_total
+        date credit_due_date
+        timestamp created_at
+    }
+
+    SALE_ITEMS {
+        bigint id PK
+        bigint sale_id FK
+        bigint product_id FK
+        integer quantity
+        numeric unit_price
+        numeric cost_price
+        numeric discount_amount
+        numeric line_total
+    }
+
+    PAYMENTS {
+        bigint id PK
+        bigint sale_id FK
+        bigint customer_id FK
+        numeric amount
+        varchar payment_method
+        varchar reference_no
+        timestamp paid_at
+    }
+
+    CREDIT_TRANSACTIONS {
+        bigint id PK
+        bigint customer_id FK
+        bigint sale_id FK
+        bigint payment_id FK
+        varchar transaction_type
+        numeric amount
+        varchar description
+        timestamp created_at
+    }
+
+    INVENTORY_MOVEMENTS {
+        bigint id PK
+        bigint product_id FK
+        bigint rack_inventory_id FK
+        bigint sale_id FK
+        bigint sale_item_id FK
+        integer quantity_change
+        varchar movement_type
+        timestamp created_at
+    }
